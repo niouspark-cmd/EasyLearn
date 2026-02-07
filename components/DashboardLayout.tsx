@@ -37,16 +37,26 @@ const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, 
 const MobileNavItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
   <Link 
     to={to} 
-    className={`flex flex-col items-center justify-center w-full py-2 gap-1 rounded-2xl transition-all duration-300 ${
-      active 
-        ? 'text-blue-600 dark:text-blue-400' 
-        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+    className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-300 rounded-2xl group ${
+      active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
     }`}
   >
-    <div className={`p-1.5 rounded-xl transition-all duration-300 ${active ? 'bg-blue-50 dark:bg-blue-900/20 -translate-y-1' : ''}`}>
-      {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: active ? 2.5 : 2 })}
+    {/* Active Glow Background */}
+    <div className={`absolute inset-x-2 inset-y-2 bg-blue-500/10 dark:bg-blue-400/10 rounded-2xl blur-md transition-all duration-500 ${active ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+
+    {/* Icon Container */}
+    <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${active ? '-translate-y-2' : 'group-hover:-translate-y-1'}`}>
+      {React.cloneElement(icon as React.ReactElement, { 
+        size: 24, 
+        strokeWidth: active ? 2.5 : 2,
+        className: `transition-transform duration-300 ${active ? 'scale-110 drop-shadow-sm' : ''}`
+      })}
     </div>
-    <span className={`text-[10px] font-bold ${active ? 'opacity-100' : 'opacity-70'}`}>{label}</span>
+    
+    {/* Label (Only visible/prominent when active) */}
+    <span className={`text-[10px] font-bold absolute bottom-2 transition-all duration-300 ${active ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+      {label}
+    </span>
   </Link>
 );
 
@@ -180,7 +190,7 @@ const DashboardLayout: React.FC = () => {
         </main>
 
         {/* MOBILE BOTTOM NAVIGATION (Fixed) */}
-        <div className="lg:hidden fixed bottom-6 left-4 right-4 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl shadow-blue-900/20 rounded-[2rem] z-50 flex items-center justify-between px-2 safe-area-pb">
+        <div className="lg:hidden fixed bottom-4 left-4 right-4 h-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-[2.5rem] z-50 flex items-center justify-between px-2 pb-1 transition-all duration-300">
           {navItems.slice(0, 4).map((item) => (
              <MobileNavItem 
                key={item.to}
@@ -188,14 +198,18 @@ const DashboardLayout: React.FC = () => {
                active={location.pathname === item.to}
              />
           ))}
+          
           <button 
              onClick={() => setShowMobileMenu(!showMobileMenu)}
-             className={`flex flex-col items-center justify-center w-full py-2 gap-1 rounded-2xl transition-all ${showMobileMenu ? 'text-blue-600' : 'text-slate-400'}`}
+             className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-300 rounded-2xl group ${showMobileMenu ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
-             <div className="p-1.5 rounded-xl">
-               <MoreHorizontal size={24} />
+             {/* Active Glow */}
+             <div className={`absolute inset-x-2 inset-y-2 bg-blue-500/10 dark:bg-blue-400/10 rounded-2xl blur-md transition-all duration-500 ${showMobileMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+
+             <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${showMobileMenu ? '-translate-y-2' : 'group-hover:-translate-y-1'}`}>
+               <MoreHorizontal size={24} strokeWidth={showMobileMenu ? 2.5 : 2} className={`transition-transform duration-300 ${showMobileMenu ? 'scale-110 drop-shadow-sm' : ''}`} />
              </div>
-             <span className="text-[10px] font-bold">Menu</span>
+             <span className={`text-[10px] font-bold absolute bottom-2 transition-all duration-300 ${showMobileMenu ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>Menu</span>
           </button>
         </div>
 
