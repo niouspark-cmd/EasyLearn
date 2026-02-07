@@ -1,0 +1,8 @@
+{
+  "name": "Easy Learn LMS",
+  "description": "A comprehensive Learning Management System tailored for West African students, focusing on WASSCE preparation, technical education, and interactive learning modules.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
