@@ -155,8 +155,22 @@ const SettingsPage: React.FC = () => {
         </SettingsSection>
 
         <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-4">
-          <button className="px-6 py-3 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">Deactivate Account</button>
-          <button className="px-6 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 font-bold rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all">Delete Data</button>
+          <button 
+             onClick={() => {
+                if(window.confirm('Are you sure you want to deactivate?')) alert('Deactivation started');
+             }}
+             className="px-6 py-3 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+          >
+            Deactivate Account
+          </button>
+          <button 
+             onClick={() => {
+                if(window.confirm('Delete all data? This is irreversible.')) alert('Data deleted');
+             }}
+             className="px-6 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 font-bold rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
+          >
+            Delete Data
+          </button>
         </div>
       </div>
     </div>

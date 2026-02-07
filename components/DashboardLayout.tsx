@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,7 +11,9 @@ import {
   Menu, 
   X,
   Bell,
-  Search
+  Search,
+  User,
+  MoreHorizontal
 } from 'lucide-react';
 import { useApp } from '../AppContext';
 import ThemeToggle from './ThemeToggle';
@@ -20,14 +21,32 @@ import ThemeToggle from './ThemeToggle';
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean, collapsed: boolean }> = ({ to, icon, label, active, collapsed }) => (
   <Link 
     to={to} 
-    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
       active 
-        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-        : 'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600'
+        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/20' 
+        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'
     }`}
   >
-    {icon}
-    {!collapsed && <span className="font-medium">{label}</span>}
+    <div className={`${active ? 'scale-110' : 'group-hover:scale-110'} transition-transform duration-200`}>
+      {icon}
+    </div>
+    {!collapsed && <span className="font-medium tracking-wide">{label}</span>}
+  </Link>
+);
+
+const MobileNavItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
+  <Link 
+    to={to} 
+    className={`flex flex-col items-center justify-center w-full py-2 gap-1 rounded-2xl transition-all duration-300 ${
+      active 
+        ? 'text-blue-600 dark:text-blue-400' 
+        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+    }`}
+  >
+    <div className={`p-1.5 rounded-xl transition-all duration-300 ${active ? 'bg-blue-50 dark:bg-blue-900/20 -translate-y-1' : ''}`}>
+      {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: active ? 2.5 : 2 })}
+    </div>
+    <span className={`text-[10px] font-bold ${active ? 'opacity-100' : 'opacity-70'}`}>{label}</span>
   </Link>
 );
 
@@ -35,36 +54,38 @@ const DashboardLayout: React.FC = () => {
   const { user, isSidebarOpen, toggleSidebar } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const handleLogout = () => {
     navigate('/');
   };
 
   const navItems = [
-    { to: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-    { to: '/dashboard/classes', icon: <BookOpen size={20} />, label: 'My Classes' },
-    { to: '/dashboard/wassce', icon: <Award size={20} />, label: 'WASSCE Practice' },
-    { to: '/dashboard/performance', icon: <BarChart3 size={20} />, label: 'Performance' },
-    { to: '/dashboard/chat', icon: <MessageSquare size={20} />, label: 'Messages' },
+    { to: '/dashboard', icon: <LayoutDashboard />, label: 'Home' },
+    { to: '/dashboard/classes', icon: <BookOpen />, label: 'Classes' },
+    { to: '/dashboard/wassce', icon: <Award />, label: 'Practice' },
+    { to: '/dashboard/chat', icon: <MessageSquare />, label: 'Chat' },
+    { to: '/dashboard/performance', icon: <BarChart3 />, label: 'Stats' },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
-      {/* Sidebar */}
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden font-sans">
+      {/* DESKTOP SIDEBAR (Hidden on Mobile) */}
       <aside 
-        className={`${
-          isSidebarOpen ? 'w-64' : 'w-20'
-        } bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 flex flex-col z-50`}
+        className={`hidden lg:flex flex-col ${
+          isSidebarOpen ? 'w-72' : 'w-24'
+        } bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 z-50`}
       >
-        <div className="p-6 flex items-center justify-between">
-          {isSidebarOpen ? (
-            <span className="text-2xl font-bold text-blue-600 tracking-tight">EasyLearn</span>
-          ) : (
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">E</div>
-          )}
+        <div className="p-8 flex items-center justify-between">
+          <Link to="/dashboard" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/20">
+              E
+            </div>
+            {isSidebarOpen && <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">EasyLearn</span>}
+          </Link>
         </div>
 
-        <nav className="flex-1 px-3 space-y-1">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => (
             <SidebarItem 
               key={item.to}
@@ -77,7 +98,7 @@ const DashboardLayout: React.FC = () => {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-900/50">
           <SidebarItem 
             to="/dashboard/settings" 
             icon={<Settings size={20} />} 
@@ -85,65 +106,119 @@ const DashboardLayout: React.FC = () => {
             active={location.pathname === '/dashboard/settings'} 
             collapsed={!isSidebarOpen} 
           />
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 rounded-xl transition-all">
-            <LogOut size={20} />
+          <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 rounded-xl transition-all group`}>
+            <LogOut size={20} className="group-hover:scale-110 transition-transform" />
             {isSidebarOpen && <span className="font-medium">Logout</span>}
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 z-10">
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        {/* DESKTOP HEADER (Hidden on Mobile) */}
+        <header className="hidden lg:flex h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 items-center justify-between px-8 z-40 sticky top-0">
           <div className="flex items-center gap-4">
             <button 
               onClick={toggleSidebar}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500"
+              className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400 transition-colors"
             >
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
             <ThemeToggle />
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full w-64">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 px-4 py-2.5 rounded-2xl w-80 border border-transparent focus-within:border-blue-500/50 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all">
               <Search size={18} className="text-slate-400 mr-2" />
               <input 
                 type="text" 
-                placeholder="Search..." 
-                onKeyDown={(e) => e.key === 'Enter' && alert(`Searching for: ${e.currentTarget.value}`)}
-                className="bg-transparent border-none focus:ring-0 text-sm w-full dark:text-white"
+                placeholder="Search resources, classes..." 
+                className="bg-transparent border-none focus:ring-0 text-sm w-full dark:text-white placeholder-slate-400 font-medium"
               />
             </div>
 
-            <div className="flex items-center gap-4 border-l border-slate-200 dark:border-slate-800 pl-6">
-              <button 
-                onClick={() => alert("Notifications feature coming soon!")}
-                className="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-              >
-                <Bell size={20} />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+            <div className="flex items-center gap-4 pl-6 border-l border-slate-200 dark:border-slate-800">
+              <button className="relative p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <Bell size={22} />
+                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
               </button>
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-semibold text-slate-800 dark:text-white">{user?.firstName} {user?.lastName}</p>
-                  <p className="text-xs text-slate-500 uppercase font-bold">{user?.role}</p>
+              
+              <div className="flex items-center gap-3 pl-2 cursor-pointer hover:opacity-80 transition-opacity">
+                <div className="text-right">
+                  <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{user?.firstName} {user?.lastName}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{user?.role}</p>
                 </div>
                 <img 
                   src={user?.avatar} 
-                  alt="Avatar" 
-                  className="w-10 h-10 rounded-full border-2 border-blue-500 p-0.5 object-cover"
+                  alt="Profile" 
+                  className="w-11 h-11 rounded-full border-2 border-white dark:border-slate-700 shadow-sm object-cover"
                 />
               </div>
             </div>
           </div>
         </header>
 
-        {/* Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 dark:bg-slate-950 transition-colors">
+        {/* MOBILE HEADER (Visible on Mobile Only) */}
+        <div className="lg:hidden h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-40">
+           <Link to="/dashboard" className="flex items-center gap-2">
+             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">E</div>
+             <span className="text-lg font-bold text-slate-900 dark:text-white">EasyLearn</span>
+           </Link>
+           <div className="flex items-center gap-3">
+             <ThemeToggle />
+             <Link to="/dashboard/settings" className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+                <img src={user?.avatar} alt="" className="w-full h-full object-cover" />
+             </Link>
+           </div>
+        </div>
+
+        {/* MAIN SCROLLABLE CONTENT */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-28 md:p-8 bg-slate-50 dark:bg-slate-950 scroll-smooth">
           <Outlet />
         </main>
+
+        {/* MOBILE BOTTOM NAVIGATION (Fixed) */}
+        <div className="lg:hidden fixed bottom-6 left-4 right-4 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl shadow-blue-900/20 rounded-[2rem] z-50 flex items-center justify-between px-2 safe-area-pb">
+          {navItems.slice(0, 4).map((item) => (
+             <MobileNavItem 
+               key={item.to}
+               {...item}
+               active={location.pathname === item.to}
+             />
+          ))}
+          <button 
+             onClick={() => setShowMobileMenu(!showMobileMenu)}
+             className={`flex flex-col items-center justify-center w-full py-2 gap-1 rounded-2xl transition-all ${showMobileMenu ? 'text-blue-600' : 'text-slate-400'}`}
+          >
+             <div className="p-1.5 rounded-xl">
+               <MoreHorizontal size={24} />
+             </div>
+             <span className="text-[10px] font-bold">Menu</span>
+          </button>
+        </div>
+
+        {/* MOBILE MENU DRAWER (For extra items) */}
+        {showMobileMenu && (
+           <div className="lg:hidden fixed inset-0 z-[60]">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowMobileMenu(false)}></div>
+              <div className="absolute bottom-24 right-4 w-64 bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 p-4 animate-scale-in origin-bottom-right">
+                 <div className="space-y-1">
+                    <Link to="/dashboard/settings" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                       <Settings size={20} /> Settings
+                    </Link>
+                    <Link to="/contact" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                       <MessageSquare size={20} /> Support
+                    </Link>
+                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 font-bold">
+                       <LogOut size={20} /> Logout
+                    </button>
+                 </div>
+              </div>
+           </div>
+        )}
       </div>
     </div>
   );
