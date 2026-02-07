@@ -13,7 +13,8 @@ import {
   Bell,
   Search,
   User,
-  MoreHorizontal
+  MoreHorizontal,
+  Zap
 } from 'lucide-react';
 import { useApp } from '../AppContext';
 import ThemeToggle from './ThemeToggle';
@@ -71,11 +72,10 @@ const DashboardLayout: React.FC = () => {
   };
 
   const navItems = [
-    { to: '/dashboard', icon: <LayoutDashboard />, label: 'Home' },
-    { to: '/dashboard/classes', icon: <BookOpen />, label: 'Classes' },
-    { to: '/dashboard/wassce', icon: <Award />, label: 'Practice' },
+    { to: '/dashboard', icon: <BookOpen />, label: 'Library' },
+    { to: '/dashboard/lab', icon: <Zap />, label: 'The Lab' },
+    { to: '/dashboard/performance', icon: <BarChart3 />, label: 'My Progress' },
     { to: '/dashboard/chat', icon: <MessageSquare />, label: 'Chat' },
-    { to: '/dashboard/performance', icon: <BarChart3 />, label: 'Stats' },
   ];
 
   return (

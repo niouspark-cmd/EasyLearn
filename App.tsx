@@ -11,6 +11,7 @@ import ClassesPage from './pages/ClassesPage';
 import CourseDetailPage from './pages/CourseDetailPage';
 import LessonViewPage from './pages/LessonViewPage';
 import WasscePracticePage from './pages/WasscePracticePage';
+import LabSoundBoardPage from './pages/LabSoundBoardPage';
 import ExamTakerPage from './pages/ExamTakerPage';
 import PerformancePage from './pages/PerformancePage';
 import ChatPage from './pages/ChatPage';
@@ -43,7 +44,8 @@ const App: React.FC = () => {
           <Route path="classes" element={<ClassesPage />} />
           <Route path="course/:id" element={<CourseDetailPage />} />
           <Route path="course/:id/lesson/:lessonId" element={<LessonViewPage />} />
-          <Route path="wassce" element={<WasscePracticePage />} />
+          <Route path="lab" element={<LabSoundBoardPage />} />
+          <Route path="wassce" element={<Navigate to="lab" replace />} /> {/* Redirect old route */}
           <Route path="performance" element={<PerformancePage />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="settings" element={<SettingsPage />} />
