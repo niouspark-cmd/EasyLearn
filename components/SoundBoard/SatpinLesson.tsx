@@ -202,40 +202,66 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
 
   return (
     <div 
-      className="h-full flex flex-col items-center justify-center text-center py-12 select-none"
+      className="h-full flex flex-col items-center justify-center text-center py-6 sm:py-12 select-none px-4"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       
       {/* Counter: X of X */}
-      <div className="mb-8 text-[#fb9610] font-black text-3xl font-outfit animate-bounce">
+      <div className="mb-4 sm:mb-8 text-[#fb9610] font-black text-2xl sm:text-3xl font-outfit animate-bounce">
           {currentIndex + 1} of {LESSON_DATA.length}
+      </div>
+
+      {/* Swipe Hint */}
+      <div className="mb-4 text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center gap-2">
+          <span>←</span> Swipe to navigate <span>→</span>
       </div>
 
       {/* Speaker Icon - The Phonics App Style */}
       <button 
         onClick={playReference}
-        className="mb-20 text-slate-800 hover:scale-110 transition-transform active:scale-95 p-4 rounded-full"
+        className="mb-8 sm:mb-16 text-slate-800 hover:scale-110 transition-transform active:scale-95 p-4 rounded-full"
+        aria-label="Play sound"
       >
-        <Volume2 size={80} strokeWidth={1.5} />
+        <Volume2 size={60} strokeWidth={1.5} className="sm:w-20 sm:h-20" />
       </button>
 
       {/* Massive Text Section */}
-      <div className="flex flex-col items-center gap-12">
-        <h2 className="text-[12rem] font-black leading-none font-outfit text-slate-900 tracking-tight" style={{ fontWeight: 900 }}>
-            {stage === 'pure-sounds' ? '?' : currentItem.letter}
-        </h2>
-
-        {/* Phoneme Dots */}
-        <div className="flex gap-8">
-            <div className="w-5 h-5 bg-black rounded-full" />
-            {stage === 'letters' && <div className="w-5 h-5 bg-black/10 rounded-full" />}
+      <div className="flex flex-col items-center gap-6 sm:gap-12">
+        <div className="relative">
+            <h2 
+                className="text-[8rem] sm:text-[12rem] font-black leading-none font-outfit text-slate-900 tracking-tight cursor-pointer hover:scale-105 transition-transform" 
+                style={{ fontWeight: 900 }}
+                onClick={playReference}
+            >
+                {stage === 'pure-sounds' ? '?' : currentItem.letter}
+            </h2>
+            {/* Sound hint tooltip */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-slate-400 text-sm font-bold opacity-0 hover:opacity-100 transition-opacity">
+                Tap to hear
+            </div>
         </div>
+
+        {/* Phoneme Dots - Visual indicator */}
+        <div className="flex gap-4 sm:gap-8">
+            <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full transition-colors ${stage === 'pure-sounds' ? 'bg-[#fb9610]' : 'bg-slate-900'}`} />
+            {stage === 'letters' && <div className="w-4 h-4 sm:w-5 sm:h-5 bg-slate-900/10 rounded-full" />}
+        </div>
+        
+        {/* Stage indicator */}
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+            {stage === 'pure-sounds' ? 'Listen to the sound' : 'Learn the letter'}
+        </p>
       </div>
 
-      {/* Simplified Recording Experience */}
-      <div className="mt-24 w-full max-w-xs">
+      {/* Recording Section with Explanation */}
+      <div className="mt-12 sm:mt-20 w-full max-w-xs px-4">
+           {/* Explanation text */}
+           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-3">
+                Hold button & say the sound
+           </p>
+           
            {!showCompare ? (
                 <button 
                     onMouseDown={startRecording}
@@ -244,37 +270,38 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
                     onTouchStart={(e) => { e.preventDefault(); startRecording(); }}
                     onTouchEnd={(e) => { e.preventDefault(); stopRecording(); }}
                     className={`
-                        w-full py-6 rounded-full font-black text-2xl shadow-xl transition-all border-b-8
+                        w-full py-4 sm:py-6 rounded-full font-black text-xl sm:text-2xl shadow-xl transition-all border-b-8
                         ${isRecording 
                             ? 'bg-rose-500 text-white border-rose-800 translate-y-2' 
                             : 'bg-[#fb9610] text-white border-[#b36a0b] active:translate-y-2'
                         }
                     `}
+                    aria-label={isRecording ? 'Recording...' : 'Hold and speak'}
                 >
-                    {isRecording ? 'Listening...' : 'Hold & Talk'}
+                    {isRecording ? '🎤 Listening...' : 'Hold & Talk 🎤'}
                 </button>
            ) : (
                 <div className="flex flex-col gap-4 animate-fade-in">
                     {verificationResult === 'correct' ? (
                         <button 
                             onClick={handleNext}
-                            className="w-full py-6 bg-emerald-500 text-white rounded-full font-black text-2xl shadow-xl border-b-8 border-emerald-800 animate-bounce"
+                            className="w-full py-4 sm:py-6 bg-emerald-500 text-white rounded-full font-black text-xl sm:text-2xl shadow-xl border-b-8 border-emerald-800 animate-bounce"
                         >
                             Next Sound! 🎈
                         </button>
                     ) : (
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             <button 
                                 onClick={playUserAudio}
-                                className="flex-1 py-4 bg-slate-100 rounded-2xl font-black text-slate-600 border-b-4 border-slate-200"
+                                className="flex-1 py-3 sm:py-4 bg-slate-100 rounded-2xl font-black text-slate-600 border-b-4 border-slate-200 text-sm sm:text-base"
                             >
-                                Hear Me
+                                🔊 Hear Me
                             </button>
                             <button 
                                 onClick={() => setShowCompare(false)}
-                                className="flex-1 py-4 bg-white border-4 border-[#fb9610] rounded-2xl font-black text-[#fb9610]"
+                                className="flex-1 py-3 sm:py-4 bg-white border-4 border-[#fb9610] rounded-2xl font-black text-[#fb9610] text-sm sm:text-base"
                             >
-                                Retry
+                                🔄 Retry
                             </button>
                         </div>
                     )}

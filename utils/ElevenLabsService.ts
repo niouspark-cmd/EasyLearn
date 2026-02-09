@@ -2,10 +2,22 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { AudioCache } from './AudioCache';
 import { STATIC_ASSETS, getPhonemeData } from './phoneticMap';
+import { PiperService } from './PiperService';
 
 const API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
 const VOICE_ID = 'hpp4J3VqNfWAUOO0d1Us'; // Updated to user's preferred voice
 const MODEL_ID = 'eleven_flash_v2_5'; // Faster model, adequate for words
+
+// LOCKED voice settings for maximum consistency across all API calls
+const VOICE_SETTINGS_LOCKED = {
+    stability: 0.95,           // Maximum stability for voice consistency
+    similarity_boost: 0.95,    // Maximum similarity to base voice
+    style: 0.0,                // Zero style variation
+    use_speaker_boost: true
+};
+
+// Feature flag: Use Piper offline TTS as primary (recommended for phonics)
+const USE_PIPER_PRIMARY = true;
 
 export class ElevenLabsService {
   private static client = new ElevenLabsClient({ apiKey: API_KEY });
@@ -13,8 +25,8 @@ export class ElevenLabsService {
   private static audioContext: AudioContext | null = null;
 
   /**
-   * Play text using ElevenLabs TTS with Smart Caching.
-   * NOW HYBRID: Checks for static local assets first.
+   * Play text using TTS with Smart Caching.
+   * Priority: 1) Static Assets (your recordings) → 2) Piper Offline TTS → 3) ElevenLabs API
    */
   static async play(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
       
@@ -23,13 +35,11 @@ export class ElevenLabsService {
 
       // 0. CHECK STATIC ASSETS (The "Gold Standard" List)
       // If the requested text matches a known static phoneme (e.g. "a", "sh", "ch"), play the local file.
-      // This bypasses API latency and cost, and guarantees correct pronunciation.
       if (STATIC_ASSETS.includes(lowerText)) {
           const phonemeData = getPhonemeData(lowerText);
           const filename = phonemeData ? phonemeData.trigger : lowerText;
           
-          console.log(`[ElevenLabs] Attempting Static Asset: "${lowerText}" -> File: "${filename}"`);
-          // Check if filename already includes an extension, otherwise default to .mp3
+          console.log(`[TTS] Static Asset: "${lowerText}" -> File: "${filename}"`);
           const extension = filename.includes('.') ? '' : '.mp3';
           const assetPath = `/assets/audio/phonemes/${filename}${extension}`;
           
@@ -40,30 +50,62 @@ export class ElevenLabsService {
             if (options?.rate) audio.playbackRate = options.rate;
             
             audio.onended = () => {
-                console.log(`[ElevenLabs] Static Playback Ended: "${lowerText}"`);
+                console.log(`[TTS] Static Playback Ended: "${lowerText}"`);
                 options?.onComplete?.();
                 this.currentAudio = null;
             };
             
-            audio.onerror = (e) => {
-                console.warn(`[ElevenLabs] Static asset FAILED using path: "${assetPath}"`, e);
-                // Fallback to API logic if file missing (though it shouldn't be)
-                this.playFromApi(text, options);
+            audio.onerror = async (e) => {
+                console.warn(`[TTS] Static asset FAILED: "${assetPath}"`, e);
+                // Fallback to Piper or API
+                await this.fallbackPlay(text, options);
             };
 
-            console.log(`[ElevenLabs] Calling audio.play() for: "${assetPath}"`);
             await audio.play();
-            console.log(`[ElevenLabs] audio.play() Promise resolved for: "${assetPath}"`);
             return;
           } catch (e) {
-            console.error(`[ElevenLabs] Static playback EXCEPTION for "${assetPath}"`, e);
-            // Fallback
+            console.error(`[TTS] Static playback EXCEPTION: "${assetPath}"`, e);
+            await this.fallbackPlay(text, options);
+            return;
           }
-      } else {
-        console.log(`[ElevenLabs] "${lowerText}" NOT in static assets list.`);
       }
 
-      // If not static, or static failed, use API
+      // 1. TRY PIPER OFFLINE TTS (if enabled)
+      // This provides consistent, offline neural TTS for blended words
+      if (USE_PIPER_PRIMARY) {
+          try {
+              console.log(`[TTS] Trying Piper offline TTS for: "${text}"`);
+              await PiperService.play(text, { 
+                  speed: options?.rate || 0.9, // Slightly slower for phonics
+                  onComplete: options?.onComplete 
+              });
+              console.log(`[TTS] Piper playback complete: "${text}"`);
+              return;
+          } catch (piperError) {
+              console.warn(`[TTS] Piper failed, falling back to ElevenLabs:`, piperError);
+              // Continue to API fallback
+          }
+      }
+
+      // 2. FALLBACK: ElevenLabs API with LOCKED settings
+      await this.playFromApi(text, options);
+  }
+
+  /**
+   * Fallback play when static assets fail
+   */
+  private static async fallbackPlay(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
+      if (USE_PIPER_PRIMARY) {
+          try {
+              await PiperService.play(text, { 
+                  speed: options?.rate || 0.9,
+                  onComplete: options?.onComplete 
+              });
+              return;
+          } catch {
+              // Fall through to API
+          }
+      }
       await this.playFromApi(text, options);
   }
 
@@ -80,10 +122,8 @@ export class ElevenLabsService {
 
           if (!blob) {
              // 2. Fetch if miss
-             console.log(`[ElevenLabs] Cache miss. Fetching from API...`);
+             console.log(`[ElevenLabs] Cache miss. Fetching from API with LOCKED voice settings...`);
              
-             // Use direct fetch to avoid SDK potentially escaping SSML
-             // URL for stream (or regular)
              const url = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream`;
              
              const optionsFetch = {
@@ -95,12 +135,7 @@ export class ElevenLabsService {
                  body: JSON.stringify({
                      text: text,
                      model_id: MODEL_ID,
-                     voice_settings: {
-                         stability: 0.4,
-                         similarity_boost: 0.75,
-                         style: 0.0,
-                         use_speaker_boost: true
-                     }
+                     voice_settings: VOICE_SETTINGS_LOCKED  // Use locked settings
                  })
              };
 
@@ -157,6 +192,7 @@ export class ElevenLabsService {
 
   /**
    * Fetches audio blob directly (for pre-warming).
+   * Now uses LOCKED voice settings for consistency.
    */
   static async fetchAudioBlob(text: string): Promise<Blob | null> {
       if (!API_KEY) return null;
@@ -172,12 +208,7 @@ export class ElevenLabsService {
                  body: JSON.stringify({
                      text: text,
                      model_id: MODEL_ID,
-                     voice_settings: {
-                         stability: 0.4,
-                         similarity_boost: 0.75,
-                         style: 0.0,
-                         use_speaker_boost: true
-                     }
+                     voice_settings: VOICE_SETTINGS_LOCKED  // Use locked settings
                  })
              });
 
@@ -204,8 +235,21 @@ export class ElevenLabsService {
   private static fallbackSpeak(text: string, options?: { onBoundary?: (event: any) => void, onComplete?: () => void }) {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
+      
       const u = new SpeechSynthesisUtterance(text);
+      
+      // Try to find a consistent female voice for fallback
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => 
+        (v.name.includes('Female') || v.name.includes('Google UK English Female') || v.name.includes('Microsoft Zira')) && 
+        v.lang.startsWith('en')
+      ) || voices.find(v => v.lang.startsWith('en'));
+
+      if (preferredVoice) u.voice = preferredVoice;
+      
       u.rate = 0.85;
+      u.pitch = 1.1; // Slightly higher/playful for kids
+      
       if (options?.onComplete) u.onend = options.onComplete;
       window.speechSynthesis.speak(u);
   }

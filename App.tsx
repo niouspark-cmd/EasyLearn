@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './AppContext';
+import { PiperService } from './utils/PiperService';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -17,6 +18,14 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 
 const App: React.FC = () => {
+  // Initialize Piper TTS on app startup (downloads voice model if needed)
+  useEffect(() => {
+    // Preload Piper voice model in background
+    PiperService.initialize().catch(err => {
+      console.log('[App] Piper initialization deferred (will retry on first use):', err);
+    });
+  }, []);
+
   return (
     <AppProvider>
       <Routes>

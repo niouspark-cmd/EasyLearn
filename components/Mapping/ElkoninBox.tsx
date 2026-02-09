@@ -36,7 +36,7 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, showDots = true
     if (isPlayingFull) return;
     setIsPlayingFull(true);
 
-    // 1. Slow sequence of individual sounds
+    // 1. Slow sequence of individual sounds (using static assets)
     for (let i = 0; i < segments.length; i++) {
         setActiveSegment(i);
         await ElevenLabsService.play(segments[i].text);
@@ -48,6 +48,7 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, showDots = true
     await new Promise(r => setTimeout(r, 300));
 
     // 3. Highlight everything and play full word
+    // ElevenLabsService will automatically play as phoneme sequence for consistency
     setActiveSegment(-1); // Special state for "all active"
     try {
         await ElevenLabsService.play(word);

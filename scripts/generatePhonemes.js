@@ -26,6 +26,14 @@ const VOICE_ID = "hpp4J3VqNfWAUOO0d1Us"; // User requested backup voice
 const OUTPUT_DIR = path.join(ROOT_DIR, "public", "assets", "audio", "phonemes");
 const MODEL_ID = "eleven_multilingual_v2"; // Slower but higher quality articulation
 
+// LOCKED VOICE SETTINGS for maximum consistency
+const VOICE_SETTINGS_LOCKED = {
+    stability: 0.95,           // Maximum stability
+    similarity_boost: 0.95,    // Maximum similarity
+    style: 0.0,                // Zero variation
+    use_speaker_boost: true
+};
+
 // Precision Training Prompts
 // We add periods to create a "staccato" punch, or double letters for length.
 // Based on user feedback: "Train it much more"
@@ -115,12 +123,7 @@ async function generateLibrary() {
             text: textPrompt,  
             model_id: MODEL_ID,
             output_format: "mp3_44100_128",
-            voice_settings: {
-                stability: 0.55,       // Increased slightly for consistency
-                similarity_boost: 0.85, // Increased clarity
-                style: 0.0,
-                use_speaker_boost: true
-            }
+            voice_settings: VOICE_SETTINGS_LOCKED  // Use locked settings
         });
 
         // Handle stream or buffer

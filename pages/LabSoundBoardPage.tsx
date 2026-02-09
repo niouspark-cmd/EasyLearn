@@ -282,7 +282,7 @@ const LabSoundBoardPage: React.FC = () => {
         </div>
 
         {/* Section 2: Blending - NAVY */}
-        <div className="bg-[#022d62] py-20 px-6 flex flex-col items-center gap-6 text-center border-t-4 border-white dark:border-white/5 relative overflow-hidden">
+        <div className="bg-[#022d62] py-20 px-6 flex flex-col items-center gap-4 text-center border-t-4 border-white dark:border-white/5 relative overflow-hidden">
            {/* Decorative circles */}
            <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
            <div className="absolute -bottom-10 -right-10 w-60 h-60 bg-white/5 rounded-full" />
@@ -291,20 +291,29 @@ const LabSoundBoardPage: React.FC = () => {
                 <Zap size={32} />
            </div>
            
-           <h3 className="text-white text-3xl font-black mb-2">Blending Fun!</h3>
+           <h3 className="text-white text-3xl font-black mb-4">Blending Fun!</h3>
 
-           <button 
-                onClick={() => setActiveLessonId(3)}
-                className="w-full max-w-sm py-6 px-8 bg-[#fb9610] text-white rounded-full font-black text-2xl shadow-xl hover:scale-105 transition-transform border-b-8 border-orange-700"
-           >
-                2-Letter Words
-           </button>
-            <button 
-                onClick={() => setActiveLessonId(4)}
-                className="w-full max-w-sm py-6 px-8 bg-white dark:bg-slate-800 text-[#022d62] dark:text-white rounded-full font-black text-2xl shadow-xl hover:scale-105 transition-transform border-b-8 border-slate-200 dark:border-slate-900"
-            >
-                3-Letter Words
-            </button>
+           <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
+               <button 
+                    onClick={() => setActiveLessonId(3)}
+                    className="py-5 px-6 bg-[#fb9610] text-white rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform border-b-8 border-orange-700"
+               >
+                    2-Letter
+               </button>
+                <button 
+                    onClick={() => setActiveLessonId(4)}
+                    className="py-5 px-6 bg-white dark:bg-slate-800 text-[#022d62] dark:text-white rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform border-b-8 border-slate-200 dark:border-slate-900"
+                >
+                    3-Letter
+                </button>
+                <button 
+                    onClick={() => setActiveLessonId(5)}
+                    className="col-span-2 py-5 px-6 bg-emerald-500 text-white rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform border-b-8 border-emerald-700 flex items-center justify-center gap-2"
+                >
+                    <span>⭐</span> 4-Letter Words <span>⭐</span>
+                </button>
+           </div>
+           <p className="text-white/40 font-bold text-sm mt-2">Digraphs & Complex Blends</p>
         </div>
 
         {/* Section 4: Practice Board - CLOUD */}
@@ -326,22 +335,23 @@ const LabSoundBoardPage: React.FC = () => {
       {/* Lesson Overlay */}
       {activeLessonId !== null && (
         <div className="fixed inset-0 z-[100] bg-white dark:bg-[#011627] flex flex-col animate-slide-up">
-           <div className={`relative p-5 flex items-center justify-center text-white font-bold shadow-md
+           <div className={`relative px-4 py-3 sm:px-6 sm:py-4 flex items-center text-white font-bold shadow-md min-h-[60px] sm:min-h-[70px]
                 ${activeLessonId <= 2 ? 'bg-[#fb9610]' : 'bg-[#022d62]'}
            `}>
-                <button onClick={() => setActiveLessonId(null)} className="absolute left-4 p-2 hover:scale-110 transition-transform">
-                    <ArrowLeft size={28} strokeWidth={3} />
+                <button onClick={() => setActiveLessonId(null)} className="p-2 hover:scale-110 transition-transform flex-shrink-0 mr-3">
+                    <ArrowLeft size={24} strokeWidth={3} />
                 </button>
-               <div className="flex flex-col items-center">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Level {activeLessonId}</span>
-                    <h2 className="text-2xl font-black font-outfit tracking-tight">
+               <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Level {activeLessonId}</span>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-black font-outfit tracking-tight text-center truncate w-full px-2">
                         {CURRICULUM.find(l => l.id === activeLessonId)?.title}
                     </h2>
                </div>
+               <div className="w-10 flex-shrink-0" /> {/* Spacer for balance */}
            </div>
            
            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#011627]">
-                <div className="max-w-xl mx-auto h-full px-6 py-12">
+                <div className="max-w-xl mx-auto h-full px-4 sm:px-6 py-6 sm:py-12">
                     {renderLessonContent(CURRICULUM.find(l => l.id === activeLessonId)?.type || '')}
                 </div>
            </div>
