@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Master - Listen & Record</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+        }
+        .card-container {
+            perspective: 1000px;
+        }
+        .btn-record.recording {
+            background-color: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .waveform {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 40px;
+            justify-content: center;
+        }
+        .bar {
+            width: 4px;
+            height: 10px;
+            background: #6366f1;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 relative overflow-hidden">
+        
+        <!-- Header & Progress -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-2">
+                <span id="progress-text" class="text-sm font-bold text-gray-500 uppercase tracking-widest">Sound 1 of 6</span>
+                <button id="reset-btn" class="text-xs text-gray-400 hover:text-indigo-600">Restart</button>
+            </div>
+            <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 16.6%"></div>
+            </div>
+        </div>
+
+        <!-- Main Interaction Card -->
+        <div id="card" class="text-center py-8 transition-all duration-300">
+            <h2 class="text-gray-400 text-sm mb-6">Tap to listen carefully</h2>
+            
+            <!-- Reference Sound Button -->
+            <button id="play-ref" class="w-32 h-32 bg-slate-900 rounded-3xl mx-auto flex flex-col items-center justify-center shadow-lg active:scale-95 transition-transform mb-10 group">
+                <span class="text-4xl group-hover:scale-110 transition-transform">🔊</span>
+                <span class="text-white text-xs mt-2 font-medium">ORIGINAL</span>
+            </button>
+
+            <!-- Recording Section -->
+            <div class="space-y-6">
+                <div id="record-state">
+                    <button id="record-btn" class="btn-record w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-md hover:bg-indigo-700 active:bg-indigo-800">
+                        <span id="mic-icon">🎤</span>
+                        <span id="record-text">Hold to Record</span>
+                    </button>
+                    <p class="text-xs text-gray-400 mt-3">Release when you finish speaking</p>
+                </div>
+
+                <!-- Compare Section (Hidden initially) -->
+                <div id="compare-actions" class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div class="waveform mb-4" id="visualizer">
+                        <div class="bar h-4"></div><div class="bar h-8"></div><div class="bar h-6"></div>
+                        <div class="bar h-10"></div><div class="bar h-5"></div><div class="bar h-9"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button id="play-user" class="py-4 bg-emerald-50 text-emerald-700 border-2 border-emerald-100 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors">
+                            ▶️ My Sound
+                        </button>
+                        <button id="retry-btn" class="py-4 bg-gray-50 text-gray-600 border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                            🔄 Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-8 flex justify-between items-center border-t pt-6">
+            <button id="prev-btn" class="text-gray-300 font-bold opacity-0 pointer-events-none">← Back</button>
+            <button id="next-btn" class="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all">
+                Next Sound →
+            </button>
+        </div>
+
+        <!-- Notification Message -->
+        <div id="toast" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-xs opacity-0 transition-opacity pointer-events-none">
+            Recording saved!
+        </div>
+    </div>
+
+    <script>
+        const sounds = ["Ah", "Ee", "Oo", "Mm", "Sh", "Ff"];
+        let currentIndex = 0;
+        let mediaRecorder;
+        let audioChunks = [];
+        let userAudioUrl = null;
+
+        // UI Elements
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
+        const playRefBtn = document.getElementById('play-ref');
+        const recordBtn = document.getElementById('record-btn');
+        const recordText = document.getElementById('record-text');
+        const compareActions = document.getElementById('compare-actions');
+        const nextBtn = document.getElementById('next-btn');
+        const playUserBtn = document.getElementById('play-user');
+        const retryBtn = document.getElementById('retry-btn');
+        const toast = document.getElementById('toast');
+
+        // 1. Reference Audio Logic
+        function playReference() {
+            const utterance = new SpeechSynthesisUtterance(sounds[currentIndex]);
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+            
+            // Visual feedback
+            playRefBtn.classList.add('ring-4', 'ring-indigo-200');
+            setTimeout(() => playRefBtn.classList.remove('ring-4', 'ring-indigo-200'), 500);
+        }
+
+        playRefBtn.addEventListener('click', playReference);
+
+        // 2. Recording Logic
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    userAudioUrl = URL.createObjectURL(audioBlob);
+                    showCompareUI();
+                };
+
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+                recordText.innerText = "Recording...";
+            } catch (err) {
+                showToast("Microphone access denied");
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordBtn.classList.remove('recording');
+                recordText.innerText = "Hold to Record";
+            }
+        }
+
+        // 3. UI State Management
+        function showCompareUI() {
+            document.getElementById('record-state').classList.add('hidden');
+            compareActions.classList.remove('hidden');
+            showToast("Listen and compare!");
+        }
+
+        function resetUI() {
+            document.getElementById('record-state').classList.remove('hidden');
+            compareActions.classList.add('hidden');
+            userAudioUrl = null;
+        }
+
+        function updateStep() {
+            currentIndex++;
+            if (currentIndex >= sounds.length) currentIndex = 0;
+            
+            progressText.innerText = `Sound ${currentIndex + 1} of ${sounds.length}`;
+            progressBar.style.width = `${((currentIndex + 1) / sounds.length) * 100}%`;
+            
+            resetUI();
+            
+            // Animation effect
+            const card = document.getElementById('card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(20px)';
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateX(0)';
+            }, 300);
+        }
+
+        // Event Listeners
+        recordBtn.addEventListener('mousedown', startRecording);
+        recordBtn.addEventListener('mouseup', stopRecording);
+        recordBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+        recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
+
+        playUserBtn.addEventListener('click', () => {
+            if (userAudioUrl) {
+                new Audio(userAudioUrl).play();
+            }
+        });
+
+        retryBtn.addEventListener('click', resetUI);
+        nextBtn.addEventListener('click', updateStep);
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            currentIndex = -1;
+            updateStep();
+        });
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 2000);
+        }
+
+        // Initial Setup
+        window.onload = () => {
+            // Wake up speech synthesis
+            window.speechSynthesis.getVoices();
+        };
+
+    </script>
+</body>
+</html>

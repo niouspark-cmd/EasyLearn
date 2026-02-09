@@ -24,8 +24,8 @@ const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, 
     to={to} 
     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
       active 
-        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/20' 
-        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20' 
+        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-teal-400'
     }`}
   >
     <div className={`${active ? 'scale-110' : 'group-hover:scale-110'} transition-transform duration-200`}>
@@ -39,11 +39,11 @@ const MobileNavItem: React.FC<{ to: string, icon: React.ReactNode, label: string
   <Link 
     to={to} 
     className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-300 rounded-2xl group ${
-      active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+      active ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
     }`}
   >
     {/* Active Glow Background */}
-    <div className={`absolute inset-x-2 inset-y-2 bg-blue-500/10 dark:bg-blue-400/10 rounded-2xl blur-md transition-all duration-500 ${active ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+    <div className={`absolute inset-x-2 inset-y-2 bg-teal-500/10 dark:bg-teal-400/10 rounded-2xl blur-md transition-all duration-500 ${active ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
 
     {/* Icon Container */}
     <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${active ? '-translate-y-2' : 'group-hover:-translate-y-1'}`}>
@@ -72,14 +72,13 @@ const DashboardLayout: React.FC = () => {
   };
 
   const navItems = [
-    { to: '/dashboard', icon: <BookOpen />, label: 'Library' },
+    { to: '/dashboard', icon: <BookOpen />, label: 'My Journey' },
     { to: '/dashboard/lab', icon: <Zap />, label: 'The Lab' },
-    { to: '/dashboard/performance', icon: <BarChart3 />, label: 'My Progress' },
-    { to: '/dashboard/chat', icon: <MessageSquare />, label: 'Chat' },
+    { to: '/dashboard/performance', icon: <BarChart3 />, label: 'My Stats' },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden font-lexend">
       {/* DESKTOP SIDEBAR (Hidden on Mobile) */}
       <aside 
         className={`hidden lg:flex flex-col ${
@@ -88,10 +87,10 @@ const DashboardLayout: React.FC = () => {
       >
         <div className="p-8 flex items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/20">
-              E
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-600/20 font-outfit">
+              A
             </div>
-            {isSidebarOpen && <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">EasyLearn</span>}
+            {isSidebarOpen && <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight font-outfit">Adesua Reading & Sounds Lab</span>}
           </Link>
         </div>
 
@@ -173,8 +172,8 @@ const DashboardLayout: React.FC = () => {
         {/* MOBILE HEADER (Visible on Mobile Only) */}
         <div className="lg:hidden h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-40">
            <Link to="/dashboard" className="flex items-center gap-2">
-             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">E</div>
-             <span className="text-lg font-bold text-slate-900 dark:text-white">EasyLearn</span>
+             <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-lg flex items-center justify-center text-white font-bold text-lg font-outfit">A</div>
+             <span className="text-lg font-bold text-slate-900 dark:text-white font-outfit">Adesua Lab</span>
            </Link>
            <div className="flex items-center gap-3">
              <ThemeToggle />
@@ -201,10 +200,10 @@ const DashboardLayout: React.FC = () => {
           
           <button 
              onClick={() => setShowMobileMenu(!showMobileMenu)}
-             className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-300 rounded-2xl group ${showMobileMenu ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+             className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-300 rounded-2xl group ${showMobileMenu ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
              {/* Active Glow */}
-             <div className={`absolute inset-x-2 inset-y-2 bg-blue-500/10 dark:bg-blue-400/10 rounded-2xl blur-md transition-all duration-500 ${showMobileMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+             <div className={`absolute inset-x-2 inset-y-2 bg-teal-500/10 dark:bg-teal-400/10 rounded-2xl blur-md transition-all duration-500 ${showMobileMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
 
              <div className={`relative z-10 p-1.5 rounded-xl transition-all duration-300 ${showMobileMenu ? '-translate-y-2' : 'group-hover:-translate-y-1'}`}>
                <MoreHorizontal size={24} strokeWidth={showMobileMenu ? 2.5 : 2} className={`transition-transform duration-300 ${showMobileMenu ? 'scale-110 drop-shadow-sm' : ''}`} />

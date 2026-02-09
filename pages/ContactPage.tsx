@@ -11,7 +11,7 @@ const ContactPage: React.FC = () => {
         <div className="container mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">E</div>
-            <span className="text-2xl font-bold text-slate-800 dark:text-white">EasyLearn</span>
+            <span className="text-2xl font-bold text-slate-800 dark:text-white">Adesua Lab</span>
           </Link>
           <div className="flex items-center gap-4">
             <ThemeToggle />

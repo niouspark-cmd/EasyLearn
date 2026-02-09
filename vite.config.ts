@@ -8,6 +8,14 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+            '/abena': {
+                target: 'https://abena.mobobi.com',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/abena/, ''),
+                secure: false
+            }
+        }
       },
       plugins: [react()],
       define: {

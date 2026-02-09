@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SATPIN Phonics Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+        .btn-record.recording {
+            background-color: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .waveform {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 40px;
+            justify-content: center;
+        }
+        .bar {
+            width: 4px;
+            height: 10px;
+            background: #6366f1;
+            border-radius: 2px;
+        }
+        .hidden { display: none; }
+        
+        /* Transition Animations */
+        .slide-right { animation: slideRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-left { animation: slideLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        @keyframes slideRight {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideLeft {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .letter-display {
+            font-size: 5rem;
+            line-height: 1;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-8 relative overflow-hidden">
+        
+        <!-- Header & Progress -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-3">
+                <span id="progress-text" class="text-xs font-black text-indigo-400 uppercase tracking-[0.2em]">Level 1: SATPIN</span>
+                <span id="step-count" class="text-xs font-bold text-gray-400">1 / 6</span>
+            </div>
+            <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 16.6%"></div>
+            </div>
+        </div>
+
+        <!-- Main Interaction Card -->
+        <div id="card-content" class="text-center py-4">
+            <p class="text-gray-400 text-sm font-medium mb-6">Listen and repeat the sound</p>
+            
+            <!-- Reference Sound Button with Letter -->
+            <button id="play-ref" class="relative w-48 h-48 bg-slate-900 rounded-[3rem] mx-auto flex flex-col items-center justify-center shadow-2xl active:scale-95 transition-all mb-10 group overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span id="display-letter" class="letter-display text-white transition-transform group-hover:scale-110">S</span>
+                <div class="mt-2 flex items-center gap-2 text-indigo-300">
+                    <span class="text-xl">🔊</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Listen</span>
+                </div>
+            </button>
+
+            <!-- Recording Section -->
+            <div class="space-y-6">
+                <div id="record-state">
+                    <button id="record-btn" class="btn-record w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all">
+                        <span id="mic-icon" class="text-2xl">🎤</span>
+                        <span id="record-text">Hold to Record</span>
+                    </button>
+                    <p class="text-[11px] text-gray-400 mt-4 uppercase font-bold tracking-widest">Release to stop recording</p>
+                </div>
+
+                <!-- Compare Section -->
+                <div id="compare-actions" class="hidden">
+                    <div class="waveform mb-6" id="visualizer">
+                        <!-- Bars generated via JS or kept static for style -->
+                        <div class="bar h-4"></div><div class="bar h-8"></div><div class="bar h-10"></div>
+                        <div class="bar h-12"></div><div class="bar h-9"></div><div class="bar h-6"></div>
+                        <div class="bar h-8"></div><div class="bar h-5"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button id="play-user" class="py-4 bg-emerald-50 text-emerald-700 border-2 border-emerald-100 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-emerald-100 active:scale-95 transition-all">
+                            ▶️ My Sound
+                        </button>
+                        <button id="retry-btn" class="py-4 bg-gray-50 text-gray-600 border-2 border-gray-100 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition-all">
+                            🔄 Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-10 flex justify-between items-center border-t border-gray-100 pt-6">
+            <button id="prev-btn" class="text-indigo-600 font-black px-4 py-2 rounded-xl transition-all opacity-0 pointer-events-none hover:bg-indigo-50">
+                ← Back
+            </button>
+            <button id="next-btn" class="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-black active:scale-95 transition-all uppercase tracking-widest text-xs">
+                Next Sound
+            </button>
+        </div>
+
+        <!-- Notification Message -->
+        <div id="toast" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-xs font-bold opacity-0 transition-all pointer-events-none z-50 shadow-2xl">
+            Recording saved!
+        </div>
+    </div>
+
+    <script>
+        // SATPIN Phonemes
+        const satpin = [
+            { letter: 'S', sound: 'sss' },
+            { letter: 'A', sound: 'ah' },
+            { letter: 'T', sound: 't' },
+            { letter: 'P', sound: 'p' },
+            { letter: 'I', sound: 'ih' },
+            { letter: 'N', sound: 'nnn' }
+        ];
+
+        let currentIndex = 0;
+        let mediaRecorder;
+        let audioChunks = [];
+        let userAudioUrl = null;
+
+        const displayLetter = document.getElementById('display-letter');
+        const stepCount = document.getElementById('step-count');
+        const progressBar = document.getElementById('progress-bar');
+        const playRefBtn = document.getElementById('play-ref');
+        const recordBtn = document.getElementById('record-btn');
+        const recordText = document.getElementById('record-text');
+        const compareActions = document.getElementById('compare-actions');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const playUserBtn = document.getElementById('play-user');
+        const retryBtn = document.getElementById('retry-btn');
+        const toast = document.getElementById('toast');
+        const cardContent = document.getElementById('card-content');
+
+        function playReference() {
+            const current = satpin[currentIndex];
+            const utterance = new SpeechSynthesisUtterance(current.sound);
+            utterance.rate = 0.6; // Slower for clear phonics
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+            
+            playRefBtn.classList.add('ring-8', 'ring-indigo-100');
+            setTimeout(() => playRefBtn.classList.remove('ring-8', 'ring-indigo-100'), 500);
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    userAudioUrl = URL.createObjectURL(audioBlob);
+                    showCompareUI();
+                };
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+                recordText.innerText = "Listening...";
+                
+                // Haptic feedback simulation
+                if ('vibrate' in navigator) navigator.vibrate(10);
+            } catch (err) {
+                showToast("Please allow microphone access");
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordBtn.classList.remove('recording');
+                recordText.innerText = "Hold to Record";
+            }
+        }
+
+        function showCompareUI() {
+            document.getElementById('record-state').classList.add('hidden');
+            compareActions.classList.remove('hidden');
+            showToast("Well done! Now compare.");
+        }
+
+        function resetUI() {
+            document.getElementById('record-state').classList.remove('hidden');
+            compareActions.classList.add('hidden');
+            userAudioUrl = null;
+        }
+
+        function navigate(direction) {
+            cardContent.classList.remove('slide-left', 'slide-right');
+            
+            if (direction === 'next') {
+                if (currentIndex < satpin.length - 1) {
+                    currentIndex++;
+                    cardContent.classList.add('slide-left');
+                }
+            } else {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    cardContent.classList.add('slide-right');
+                }
+            }
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const current = satpin[currentIndex];
+            displayLetter.innerText = current.letter;
+            stepCount.innerText = `${currentIndex + 1} / ${satpin.length}`;
+            progressBar.style.width = `${((currentIndex + 1) / satpin.length) * 100}%`;
+            
+            // Handle Navigation Buttons
+            if (currentIndex === 0) {
+                prevBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            nextBtn.innerText = currentIndex === satpin.length - 1 ? "Finish" : "Next Sound";
+
+            resetUI();
+        }
+
+        // Event Listeners
+        playRefBtn.addEventListener('click', playReference);
+        
+        recordBtn.addEventListener('mousedown', startRecording);
+        recordBtn.addEventListener('mouseup', stopRecording);
+        recordBtn.addEventListener('mouseleave', stopRecording); // Stop if mouse slides off button
+        
+        recordBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+        recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRecording(); });
+
+        playUserBtn.addEventListener('click', () => {
+            if (userAudioUrl) {
+                const audio = new Audio(userAudioUrl);
+                audio.play();
+            }
+        });
+
+        retryBtn.addEventListener('click', resetUI);
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex === satpin.length - 1) {
+                showToast("🎉 All sounds completed!");
+                // Optionally reset or navigate to a summary screen here
+            } else {
+                navigate('next');
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => navigate('prev'));
+        
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.opacity = '1';
+            toast.style.bottom = '2rem';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.bottom = '1.5rem';
+            }, 2500);
+        }
+
+        // Initial Setup
+        window.onload = () => {
+            // Wake up speech synthesis
+            window.speechSynthesis.getVoices();
+            updateDisplay();
+        };
+    </script>
+</body>
+</html>

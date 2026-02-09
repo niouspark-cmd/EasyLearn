@@ -1,80 +1,93 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, RotateCcw } from 'lucide-react';
-import { speakText, stopSpeaking } from '../../utils/voiceUtils';
+import { ElevenLabsService } from '../../utils/ElevenLabsService';
+
 
 interface TextHighlighterProps {
   title: string;
   text: string;
-  initialSpeed?: number; // 0.5 to 2.0
+  initialSpeed?: number;
   privacyMode?: boolean;
 }
 
+
 const TextHighlighter: React.FC<TextHighlighterProps> = ({ title, text, initialSpeed = 1.0, privacyMode = false }) => {
   const [words, setWords] = useState<string[]>([]);
+  const [wordOffsets, setWordOffsets] = useState<number[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(initialSpeed);
-
+  
+  // No longer need refs for audio/animation
+  
   useEffect(() => {
-    setWords(text.split(' '));
+    const w = text.split(' ');
+    setWords(w);
     
-    return () => stopSpeaking();
+    let current = 0;
+    const offsets = w.map(word => {
+        const start = current;
+        current += word.length + 1; // +1 for space
+        return start;
+    });
+    setWordOffsets(offsets);
+
+    return () => stopAudio();
   }, [text]);
 
-  const handlePlay = () => {
-    // Determine word starts for mapping
-    let currentLength = 0;
-    const wordStarts = text.split(' ').map((w, i) => {
-        const start = currentLength;
-        currentLength += w.length + 1; // +1 for space
-        return { start, index: i };
-    });
-
-    if (isPlaying) {
-      stopSpeaking();
+  const stopAudio = () => {
+      ElevenLabsService.stop();
       setIsPlaying(false);
       setActiveIndex(-1);
+  };
+
+  const handlePlay = async () => {
+    if (isPlaying) {
+      stopAudio();
     } else {
       setIsPlaying(true);
       setActiveIndex(-1);
 
-      speakText(text, {
-          rate: speed,
-          pitch: 1.1,
-          onBoundary: (event) => {
-             if (event.name === 'word') {
-                 const charIdx = event.charIndex;
-                 // Find word index based on char index
-                 const match = wordStarts.find(ws => Math.abs(ws.start - charIdx) < 2) || 
-                               wordStarts.filter(ws => ws.start <= charIdx).pop(); 
-                 
-                 if (match) {
-                     setActiveIndex(match.index);
-                 }
-             }
-          },
-          onEnd: () => {
-              setIsPlaying(false);
-              setActiveIndex(-1);
-          }
-      });
+      try {
+          await ElevenLabsService.play(text, {
+              rate: speed,
+              onBoundary: (e) => {
+                  // e is simulated word boundary event
+                  // We use e.textOffset to match our word offsets
+                  // Simple exact match or closest previous
+                  // Note: ElevenLabs simulation gives approximate char offset.
+                  // We iterate to find the range it belongs to.
+                  const offset = e.textOffset;
+                  
+                  // Find the word index corresponding to this offset
+                  // A word i is active if offset >= wordOffsets[i] && offset < wordOffsets[i+1]
+                  const idx = wordOffsets.findIndex((start, i) => {
+                      const nextStart = wordOffsets[i + 1] ?? Infinity;
+                      return offset >= start && offset < nextStart;
+                  });
+
+                  if (idx !== -1) {
+                      setActiveIndex(idx);
+                  }
+              },
+              onComplete: () => {
+                  setIsPlaying(false);
+                  setActiveIndex(-1);
+              }
+          });
+      } catch (e) {
+          console.error("Playback failed", e);
+          setIsPlaying(false);
+      }
     }
   };
 
-  const handleStop = () => {
-    stopSpeaking();
-    setIsPlaying(false);
-    setActiveIndex(-1);
-  };
+  const handleStop = stopAudio;
 
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSpeed = parseFloat(e.target.value);
     setSpeed(newSpeed);
-    // If playing, we need to restart to apply speed (Web Speech API limitation usually)
-    if (isPlaying) {
-       handleStop();
-       // Optionally restart immediately, but better let user press play
-    }
+    // Note: Can't update speed of running Azure stream dynamically without restart
   };
 
   return (
@@ -101,7 +114,7 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({ title, text, initialS
 
             <button 
               onClick={handlePlay}
-              className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${isPlaying ? 'bg-yellow-400 text-black' : 'bg-blue-600 text-white hover:scale-105'}`}
+              className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${isPlaying ? 'bg-yellow-400 text-black' : 'bg-indigo-600 text-white hover:scale-105'}`}
             >
               {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
             </button>
@@ -121,7 +134,7 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({ title, text, initialS
              key={i} 
              className={`inline-block mr-2 transition-colors duration-200 ${
                i === activeIndex 
-                 ? 'text-blue-600 dark:text-blue-400 font-bold scale-105 transform' 
+                 ? 'text-teal-500 dark:text-teal-400 font-bold scale-105 transform' 
                  : i < activeIndex 
                     ? 'text-slate-800 dark:text-slate-300' 
                     : ''

@@ -89,7 +89,7 @@ const SettingsPage: React.FC = () => {
           <button 
             onClick={handleSaveProfile}
             disabled={isSaving}
-            className="px-6 py-3 blue-gradient text-white font-bold rounded-xl shadow-lg shadow-blue-100 hover:scale-[1.02] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>

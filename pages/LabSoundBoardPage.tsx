@@ -1,26 +1,58 @@
+
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Trash2, CheckCircle } from 'lucide-react';
 import SoundTile from '../components/SoundBoard/SoundTile';
-import RecordBar from '../components/SoundBoard/RecordBar';
+import SatpinLesson from '../components/SoundBoard/SatpinLesson';
+
 import ElkoninBox, { PhonemeSegment } from '../components/Mapping/ElkoninBox';
 import WordBuilder from '../components/BuildWord/WordBuilder';
 import TextHighlighter from '../components/Fluency/TextHighlighter';
 import GhanaLab from '../components/GhanaLab/GhanaLab';
 
-// Mock data for initial Sound Board
+// Expanded Phonics Data - Full Alphabet + Digraphs
 const PHONEMES = [
-  { g: 'a', p: '/æ/', c: 'bg-blue-500' },
-  { g: 's', p: '/s/', c: 'bg-indigo-500' },
-  { g: 't', p: '/t/', c: 'bg-indigo-500' },
-  { g: 'p', p: '/p/', c: 'bg-indigo-500' },
-  { g: 'i', p: '/ɪ/', c: 'bg-blue-500' },
-  { g: 'n', p: '/n/', c: 'bg-indigo-500' },
-  { g: 'm', p: '/m/', c: 'bg-indigo-500' },
-  { g: 'd', p: '/d/', c: 'bg-indigo-500' },
-  { g: 'g', p: '/g/', c: 'bg-indigo-500' },
-  { g: 'o', p: '/ɒ/', c: 'bg-blue-500' },
-  { g: 'c', p: '/k/', c: 'bg-indigo-500' },
-  { g: 'k', p: '/k/', c: 'bg-indigo-500' },
+  // Row 1: Vowels & Common
+  { g: 'a', p: '/æ/', c: 'bg-teal-600' },
+  { g: 'b', p: '/b/', c: 'bg-indigo-600' },
+  { g: 'c', p: '/k/', c: 'bg-indigo-600' },
+  { g: 'd', p: '/d/', c: 'bg-indigo-600' },
+  { g: 'e', p: '/e/', c: 'bg-teal-600' },
+  { g: 'f', p: '/f/', c: 'bg-indigo-600' },
+  
+  // Row 2
+  { g: 'g', p: '/g/', c: 'bg-indigo-600' },
+  { g: 'h', p: '/h/', c: 'bg-indigo-600' },
+  { g: 'i', p: '/ɪ/', c: 'bg-teal-600' },
+  { g: 'j', p: '/dʒ/', c: 'bg-indigo-600' },
+  { g: 'k', p: '/k/', c: 'bg-indigo-600' },
+  { g: 'l', p: '/l/', c: 'bg-indigo-600' },
+
+  // Row 3
+  { g: 'm', p: '/m/', c: 'bg-indigo-600' },
+  { g: 'n', p: '/n/', c: 'bg-indigo-600' },
+  { g: 'o', p: '/ɒ/', c: 'bg-teal-600' },
+  { g: 'p', p: '/p/', c: 'bg-indigo-600' },
+  { g: 'q', p: '/kw/', c: 'bg-indigo-600' },
+  { g: 'r', p: '/r/', c: 'bg-indigo-600' },
+
+  // Row 4
+  { g: 's', p: '/s/', c: 'bg-indigo-600' },
+  { g: 't', p: '/t/', c: 'bg-indigo-600' },
+  { g: 'u', p: '/ʌ/', c: 'bg-teal-600' },
+  { g: 'v', p: '/v/', c: 'bg-indigo-600' },
+  { g: 'w', p: '/w/', c: 'bg-indigo-600' },
+  { g: 'x', p: '/ks/', c: 'bg-indigo-600' },
+
+  // Row 5
+  { g: 'y', p: '/y/', c: 'bg-teal-600' },
+  { g: 'z', p: '/z/', c: 'bg-indigo-600' },
+  { g: 'ch', p: '/tʃ/', c: 'bg-rose-600' }, // Digraphs distinctive color
+  { g: 'sh', p: '/ʃ/', c: 'bg-rose-600' },
+  { g: 'th', p: '/θ/', c: 'bg-rose-600' },
+  { g: 'ng', p: '/ŋ/', c: 'bg-rose-600' },
+  { g: 'ou', p: '/aʊ/', c: 'bg-amber-500' },
+  { g: 'ow', p: '/aʊ/', c: 'bg-amber-500' },
+  { g: 'oy', p: '/ɔɪ/', c: 'bg-amber-500' },
 ];
 
 const MAPPING_WORDS = [
@@ -50,9 +82,13 @@ const MAPPING_WORDS = [
   }
 ];
 
+import SessionSuccess from '../components/Feedback/SessionSuccess';
+
 const LabSoundBoardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'sounds' | 'mapping' | 'build' | 'fluency' | 'ghana'>('sounds');
+  const [phonicsStage, setPhonicsStage] = useState<'level1' | 'level2' | 'all'>('level1');
   const [privacyMode, setPrivacyMode] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   return (
     <div className="pb-32">
@@ -62,63 +98,103 @@ const LabSoundBoardPage: React.FC = () => {
            <p className="text-slate-500 dark:text-slate-400 font-lexend">Master phonemes, word mapping, and reading.</p>
         </div>
 
-        {/* Start Privacy Mode Toggle */}
-        <button 
-           onClick={() => setPrivacyMode(!privacyMode)}
-           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border ${privacyMode ? 'bg-slate-800 text-white border-slate-700' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-        >
-            {privacyMode ? <EyeOff size={18} /> : <Eye size={18} />}
-            {privacyMode ? 'Privacy On' : 'Privacy Off'}
-        </button>
+        <div className="flex gap-2">
+            <button 
+               onClick={() => setShowSuccess(true)}
+               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border bg-teal-500 text-white border-teal-400 hover:bg-teal-400 shadow-md shadow-teal-500/20"
+            >
+                <CheckCircle size={18} />
+                <span className="hidden sm:inline">Finish</span>
+            </button>
+
+
+        </div>
       </header>
       
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit mb-8 overflow-x-auto">
-          <button 
-            onClick={() => setActiveTab('sounds')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'sounds' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-          >
-            Sound Board
-          </button>
-          <button 
-            onClick={() => setActiveTab('mapping')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'mapping' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-          >
-            Word Mapping
-          </button>
-          <button 
-            onClick={() => setActiveTab('build')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'build' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-          >
-            Build-a-Word
-          </button>
-          <button 
-            onClick={() => setActiveTab('fluency')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'fluency' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-          >
-            Fluency Reader
-          </button>
-          <button 
-            onClick={() => setActiveTab('ghana')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'ghana' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-          >
-            Sound Clinic
-          </button>
+      {/* Simplified Navigation */}
+      <div className="flex justify-center mb-10">
+          <nav className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm backdrop-blur-sm overflow-x-auto max-w-full">
+              {[
+                  { id: 'sounds', label: 'Sounds' },
+                  { id: 'mapping', label: 'Mapping' },
+                  { id: 'build', label: 'Builder' },
+                  { id: 'fluency', label: 'Reader' },
+                  { id: 'ghana', label: 'Clinic' }
+              ].map((tab) => (
+                  <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`
+                          px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap
+                          ${activeTab === tab.id 
+                            ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-md' 
+                            : 'text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300'
+                          }
+                      `}
+                  >
+                      {tab.label}
+                  </button>
+              ))}
+          </nav>
       </div>
 
       {activeTab === 'sounds' && (
         <div className="animate-fade-in-up">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-            {PHONEMES.map((item, index) => (
-              <SoundTile 
-                key={index} 
-                grapheme={item.g} 
-                phoneme={item.p} 
-                color={item.c}
-              />
-            ))}
+            
+          {/* Level Selection */}
+          <div className="flex justify-center mb-8">
+              <div className="bg-white dark:bg-slate-800 p-1 rounded-xl inline-flex shadow-sm border border-slate-200 dark:border-slate-700">
+                  <button 
+                      onClick={() => setPhonicsStage('level1')}
+                      className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${phonicsStage === 'level1' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400'}`}
+                  >
+                      Pure Sounds (SATPIN)
+                  </button>
+                  <button 
+                      onClick={() => setPhonicsStage('level2')}
+                      className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${phonicsStage === 'level2' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400'}`}
+                  >
+                      Sounds & Letters
+                  </button>
+                  <button 
+                      onClick={() => setPhonicsStage('all')}
+                      className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${phonicsStage === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400'}`}
+                  >
+                      Full Chart
+                  </button>
+              </div>
           </div>
-          <RecordBar />
+
+          {phonicsStage === 'level1' ? (
+              <SatpinLesson 
+                stage="pure-sounds" 
+                onComplete={() => setPhonicsStage('level2')} 
+              />
+          ) : phonicsStage === 'level2' ? (
+              <SatpinLesson 
+                stage="letters" 
+                onComplete={() => setPhonicsStage('all')} 
+                onBack={() => setPhonicsStage('level1')}
+              />
+          ) : (
+            <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+                    {PHONEMES.map((item, index) => (
+                    <SoundTile 
+                        key={index} 
+                        grapheme={item.g} 
+                        phoneme={item.p} 
+                        color={item.c}
+                    />
+                    ))}
+                </div>
+                <div className="mt-8 text-center text-slate-400 text-sm font-medium">
+                    Explore all phonemes available in the system.
+                </div>
+            </>
+          )}
+
+
         </div>
       )}
 
@@ -162,13 +238,11 @@ const LabSoundBoardPage: React.FC = () => {
              <TextHighlighter 
                title="Morning Routine" 
                text="Today is a great day to read. I can learn new words and sounds. Reading makes me smart and happy." 
-               privacyMode={privacyMode}
              />
              
              <TextHighlighter 
                title="The Friendly Cat" 
                text="The cat sat on the mat. It saw a rat. The rat ran away fast. The cat was sad." 
-               privacyMode={privacyMode}
              />
            </div>
         </div>
@@ -176,6 +250,16 @@ const LabSoundBoardPage: React.FC = () => {
 
       {activeTab === 'ghana' && (
         <GhanaLab />
+      )}
+
+      {showSuccess && (
+        <SessionSuccess 
+          soundsMastered={12}
+          wordsBuilt={5}
+          streakDays={3}
+          onContinue={() => setShowSuccess(false)}
+          onExit={() => setShowSuccess(false)}
+        />
       )}
     </div>
   );

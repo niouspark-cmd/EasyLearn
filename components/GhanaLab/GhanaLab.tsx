@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { speakText } from '../../utils/voiceUtils';
+import { ElevenLabsService } from '../../utils/ElevenLabsService';
 import { ArrowLeft, Play, Volume2, Info } from 'lucide-react';
 
 interface ConfusionPair {
@@ -41,12 +41,12 @@ const GhanaLab: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeDrillIndex, setActiveDrillIndex] = useState(0);
 
-
-
-  // ...
-
-  const handlePlay = (text: string) => {
-    speakText(text, { rate: 0.8, pitch: 1.1 });
+  const handlePlay = async (text: string) => {
+    try {
+        await ElevenLabsService.play(text);
+    } catch (e) {
+        console.error("GhanaLab play failed", e);
+    }
   };
 
   const renderMenu = () => (

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SATPIN Phonics Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        .letter-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .recording { animation: pulse-red 1.5s infinite; background-color: #ef4444 !important; }
+        
+        /* Interactive States */
+        .active-letter {
+            color: #4f46e5;
+            transform: scale(1.2) translateY(-5px);
+            text-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        /* Layout Helpers */
+        .app-card {
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 28rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 650px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .level-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .level-btn.active {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            border-color: #c7d2fe;
+        }
+        .level-btn.inactive {
+            color: #9ca3af;
+            background-color: transparent;
+        }
+
+        /* Keyboard Keys */
+        .key-btn {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-bottom-width: 6px;
+            border-radius: 1rem;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: #374151;
+            transition: all 0.1s;
+            touch-action: manipulation;
+        }
+        .key-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 2px;
+            background-color: #f3f4f6;
+        }
+        
+        /* Board Tiles */
+        .board-tile {
+            background: #4f46e5;
+            color: white;
+            border-radius: 1rem;
+            width: 3.5rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
+
+    <!-- Top Navigation -->
+    <div class="flex gap-2 bg-white p-2 rounded-full shadow-sm mb-2">
+        <button onclick="setLevel(1)" id="nav-l1" class="level-btn inactive">1. Sounds</button>
+        <button onclick="setLevel(2)" id="nav-l2" class="level-btn inactive">2. Blend</button>
+        <button onclick="setLevel(3)" id="nav-l3" class="level-btn inactive">3. Build</button>
+    </div>
+
+    <div class="app-card" id="app-container">
+        
+        <!-- HEADER -->
+        <div class="p-8 pb-4">
+            <div class="flex justify-between items-center mb-2">
+                <span id="level-title" class="text-xs font-black text-indigo-500 uppercase tracking-widest">Level 2: Segment & Blend</span>
+                <span id="level-progress" class="text-xs font-bold text-gray-400">1 / 5</span>
+            </div>
+            <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 20%"></div>
+            </div>
+        </div>
+
+        <!-- CONTENT AREA (Swappable) -->
+        <div id="content-area" class="flex-1 flex flex-col relative">
+            
+            <!-- VIEW 1 & 2: Flashcards (Sounds & Blending) -->
+            <div id="flashcard-view" class="flex flex-col h-full px-8 pb-8 transition-opacity duration-300">
+                <div class="flex-1 flex flex-col items-center justify-center">
+                    <p id="instruction" class="text-gray-400 text-sm font-medium mb-6 uppercase tracking-wider text-center">Tap to listen</p>
+                    
+                    <button id="main-card" class="relative w-full aspect-square max-h-64 bg-slate-900 rounded-[2.5rem] flex flex-col items-center justify-center shadow-2xl active:scale-95 transition-all outline-none group">
+                        <div id="card-display" class="flex gap-1 justify-center items-center text-white font-black text-7xl">
+                            <!-- JS injects content here -->
+                        </div>
+                        <div class="mt-8 flex items-center gap-2 text-indigo-300 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <span class="text-xl">🔊</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Listen</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Record Controls -->
+                <div class="mt-auto space-y-4">
+                    <div id="record-ui">
+                        <button id="record-btn" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:bg-indigo-700 active:bg-indigo-800 transition-all">
+                            <span>🎤</span> <span id="record-label">Hold to Record</span>
+                        </button>
+                    </div>
+                    <div id="compare-ui" class="hidden grid grid-cols-2 gap-3">
+                        <button id="play-my-recording" class="py-4 bg-emerald-50 text-emerald-700 border-2 border-emerald-100 rounded-2xl font-black flex items-center justify-center gap-2">▶️ Me</button>
+                        <button id="retry-recording" class="py-4 bg-gray-50 text-gray-500 border-2 border-gray-100 rounded-2xl font-black flex items-center justify-center gap-2">🔄 Retry</button>
+                    </div>
+                </div>
+
+                <!-- Navigation Footer -->
+                <div class="mt-6 flex justify-between items-center border-t border-gray-100 pt-4">
+                    <button id="prev-btn" class="text-indigo-600 font-black px-4 py-2 opacity-0 pointer-events-none">← Back</button>
+                    <button id="next-btn" class="bg-slate-900 text-white px-8 py-3 rounded-xl font-black shadow-lg text-sm uppercase tracking-wider">Next</button>
+                </div>
+            </div>
+
+            <!-- VIEW 3: Word Builder (Hidden by default) -->
+            <div id="builder-view" class="hidden flex-col h-full px-6 pb-6 absolute inset-0 bg-white z-10">
+                <div class="flex-1 flex flex-col">
+                    <p class="text-center text-gray-400 text-sm font-bold mb-4 uppercase tracking-widest">Build & Read</p>
+                    
+                    <!-- The Board -->
+                    <div class="bg-indigo-50 rounded-3xl border-2 border-indigo-100 flex-1 mb-6 relative flex flex-col items-center justify-center p-4">
+                        <div id="build-area" class="flex flex-wrap justify-center gap-2 min-h-[4rem]">
+                            <span class="text-indigo-200 font-bold text-2xl select-none" id="placeholder-text">Tap letters below...</span>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="absolute bottom-4 right-4 left-4 flex gap-2 justify-center">
+                             <button onclick="clearBoard()" class="px-4 py-2 bg-white text-gray-400 rounded-xl font-bold text-xs shadow-sm border border-gray-200">Clear</button>
+                             <button onclick="readBoard()" class="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs shadow-md flex gap-2 items-center">
+                                 <span>🔊</span> Read Word
+                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Keyboard -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <button class="key-btn h-20" onclick="addLetter('s')">s</button>
+                        <button class="key-btn h-20" onclick="addLetter('a')">a</button>
+                        <button class="key-btn h-20" onclick="addLetter('t')">t</button>
+                        <button class="key-btn h-20" onclick="addLetter('p')">p</button>
+                        <button class="key-btn h-20" onclick="addLetter('i')">i</button>
+                        <button class="key-btn h-20" onclick="addLetter('n')">n</button>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="text-xs text-gray-400 font-medium">Create words like: sat, pin, pat, sit, nip</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-xs font-bold opacity-0 transition-opacity pointer-events-none z-50">
+            Saved!
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const soundsMap = {
+            's': 'sss', 'a': 'ah', 't': 't', 'p': 'p', 'i': 'ih', 'n': 'nnn'
+        };
+
+        const level1Data = ['s', 'a', 't', 'p', 'i', 'n'];
+        
+        const level2Data = [
+            { word: 'as', sounds: ['ah', 'sss'] },
+            { word: 'at', sounds: ['ah', 't'] },
+            { word: 'it', sounds: ['ih', 't'] },
+            { word: 'in', sounds: ['ih', 'nnn'] },
+            { word: 'is', sounds: ['ih', 'zzz'] }
+        ];
+
+        // --- STATE ---
+        let currentLevel = 2; // Default to Level 2 as requested previously
+        let currentIndex = 0;
+        let builtWord = [];
+        let mediaRecorder;
+        let audioChunks = [];
+        let userAudioUrl = null;
+        let isPlaying = false;
+
+        // --- DOM ELEMENTS ---
+        const navL1 = document.getElementById('nav-l1');
+        const navL2 = document.getElementById('nav-l2');
+        const navL3 = document.getElementById('nav-l3');
+        const flashcardView = document.getElementById('flashcard-view');
+        const builderView = document.getElementById('builder-view');
+        const levelTitle = document.getElementById('level-title');
+        const levelProgress = document.getElementById('level-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const cardDisplay = document.getElementById('card-display');
+        const mainCard = document.getElementById('main-card');
+        const recordBtn = document.getElementById('record-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const buildArea = document.getElementById('build-area');
+        const placeholder = document.getElementById('placeholder-text');
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            window.speechSynthesis.getVoices();
+            setLevel(2); // Start at Blending
+        };
+
+        function setLevel(lvl) {
+            currentLevel = lvl;
+            currentIndex = 0;
+            
+            // Nav Styles
+            [navL1, navL2, navL3].forEach(b => b.className = 'level-btn inactive');
+            document.getElementById(`nav-l${lvl}`).className = 'level-btn active';
+
+            // View Toggle
+            if (lvl === 3) {
+                flashcardView.style.opacity = '0';
+                setTimeout(() => {
+                    flashcardView.classList.add('hidden');
+                    builderView.classList.remove('hidden');
+                    // Update Header for L3
+                    levelTitle.innerText = "Level 3: Word Builder";
+                    levelProgress.innerText = "Free Play";
+                    progressBar.style.width = "100%";
+                }, 200);
+            } else {
+                builderView.classList.add('hidden');
+                flashcardView.classList.remove('hidden');
+                flashcardView.style.opacity = '1';
+                loadCard();
+            }
+        }
+
+        // --- LOGIC: LEVELS 1 & 2 ---
+        function loadCard() {
+            resetRecordingUI();
+            
+            // Data Selection
+            const total = currentLevel === 1 ? level1Data.length : level2Data.length;
+            const currentItem = currentLevel === 1 ? level1Data[currentIndex] : level2Data[currentIndex];
+
+            // Header Update
+            levelTitle.innerText = currentLevel === 1 ? "Level 1: SATPIN Sounds" : "Level 2: Segment & Blend";
+            levelProgress.innerText = `${currentIndex + 1} / ${total}`;
+            progressBar.style.width = `${((currentIndex + 1) / total) * 100}%`;
+
+            // Display Render
+            cardDisplay.innerHTML = '';
+            if (currentLevel === 1) {
+                const span = document.createElement('span');
+                span.innerText = currentItem.toUpperCase();
+                span.className = 'letter-pop';
+                cardDisplay.appendChild(span);
+            } else {
+                // Split word into spans
+                const chars = currentItem.word.split('');
+                chars.forEach((char, idx) => {
+                    const span = document.createElement('span');
+                    span.innerText = char;
+                    span.id = `char-${idx}`;
+                    span.className = 'letter-node transition-all duration-200';
+                    cardDisplay.appendChild(span);
+                });
+            }
+
+            // Nav Buttons
+            prevBtn.classList.toggle('opacity-0', currentIndex === 0);
+            prevBtn.classList.toggle('pointer-events-none', currentIndex === 0);
+            
+            if (currentIndex === total - 1) {
+                nextBtn.innerText = currentLevel === 2 ? "Go to Level 3" : "Finish";
+            } else {
+                nextBtn.innerText = "Next";
+            }
+        }
+
+        async function playCardAudio() {
+            if (isPlaying) return;
+            isPlaying = true;
+
+            if (currentLevel === 1) {
+                // Single Sound
+                const letter = level1Data[currentIndex];
+                const sound = soundsMap[letter] || letter;
+                cardDisplay.children[0].classList.add('active-letter');
+                await speak(sound, 0.8);
+                cardDisplay.children[0].classList.remove('active-letter');
+            } else {
+                // Segment & Blend
+                const item = level2Data[currentIndex];
+                const nodes = cardDisplay.children;
+                
+                // 1. Sound 1
+                nodes[0].classList.add('active-letter');
+                await speak(item.sounds[0], 0.7);
+                nodes[0].classList.remove('active-letter');
+                await wait(300);
+
+                // 2. Sound 2
+                nodes[1].classList.add('active-letter');
+                await speak(item.sounds[1], 0.7);
+                nodes[1].classList.remove('active-letter');
+                await wait(400);
+
+                // 3. Blend
+                for(let n of nodes) n.classList.add('active-letter');
+                await speak(item.word, 0.6);
+                await wait(500);
+                for(let n of nodes) n.classList.remove('active-letter');
+            }
+            isPlaying = false;
+        }
+
+        // --- LOGIC: LEVEL 3 (BUILDER) ---
+        function addLetter(l) {
+            if (builtWord.length === 0) {
+                placeholder.style.display = 'none';
+                buildArea.innerHTML = '';
+            }
+            if (builtWord.length >= 6) return; // Limit length
+
+            builtWord.push(l);
+            
+            const tile = document.createElement('div');
+            tile.className = 'board-tile letter-pop';
+            tile.innerText = l;
+            tile.onclick = (e) => {
+                e.stopPropagation(); // Prevent board click
+                speak(soundsMap[l] || l, 0.8);
+                tile.classList.add('scale-110', 'bg-indigo-500');
+                setTimeout(() => tile.classList.remove('scale-110', 'bg-indigo-500'), 200);
+            };
+            buildArea.appendChild(tile);
+            
+            // Play sound immediately on add
+            speak(soundsMap[l] || l, 1.2);
+        }
+
+        function clearBoard() {
+            builtWord = [];
+            buildArea.innerHTML = '';
+            placeholder.style.display = 'block';
+        }
+
+        async function readBoard() {
+            if (builtWord.length === 0) return;
+            const word = builtWord.join('');
+            
+            // Highlight all
+            const tiles = buildArea.children;
+            for(let t of tiles) t.style.backgroundColor = '#4338ca'; // Darker indigo
+            
+            await speak(word, 0.7);
+            
+            for(let t of tiles) t.style.backgroundColor = ''; // Reset
+        }
+
+        // --- UTILS ---
+        function speak(text, rate) {
+            return new Promise(resolve => {
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = rate;
+                u.onend = resolve;
+                u.onerror = resolve;
+                window.speechSynthesis.speak(u);
+            });
+        }
+        const wait = (ms) => new Promise(r => setTimeout(r, ms));
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 2000);
+        }
+
+        // --- RECORDING ---
+        async function startRec() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(audioChunks, { type: 'audio/wav' });
+                    userAudioUrl = URL.createObjectURL(blob);
+                    document.getElementById('record-ui').classList.add('hidden');
+                    document.getElementById('compare-ui').classList.remove('hidden');
+                    showToast("Recording Saved!");
+                };
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+                document.getElementById('record-label').innerText = "Recording...";
+            } catch(e) { showToast("Mic Access Denied"); }
+        }
+
+        function stopRec() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordBtn.classList.remove('recording');
+                document.getElementById('record-label').innerText = "Hold to Record";
+            }
+        }
+
+        function resetRecordingUI() {
+            document.getElementById('record-ui').classList.remove('hidden');
+            document.getElementById('compare-ui').classList.add('hidden');
+            userAudioUrl = null;
+        }
+
+        // --- EVENT LISTENERS ---
+        mainCard.addEventListener('click', playCardAudio);
+        
+        // Navigation
+        nextBtn.addEventListener('click', () => {
+            const limit = currentLevel === 1 ? level1Data.length : level2Data.length;
+            if (currentIndex < limit - 1) {
+                currentIndex++;
+                loadCard();
+            } else {
+                // Progression logic
+                if (currentLevel === 2) setLevel(3);
+                else showToast("Level Complete!");
+            }
+        });
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadCard();
+            }
+        });
+
+        // Recording
+        recordBtn.addEventListener('mousedown', startRec);
+        recordBtn.addEventListener('mouseup', stopRec);
+        recordBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRec(); });
+        recordBtn.addEventListener('touchend', (e) => { e.preventDefault(); stopRec(); });
+
+        document.getElementById('play-my-recording').addEventListener('click', () => {
+            if (userAudioUrl) new Audio(userAudioUrl).play();
+        });
+        document.getElementById('retry-recording').addEventListener('click', resetRecordingUI);
+
+    </script>
+</body>
+</html>

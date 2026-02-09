@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Volume2 } from 'lucide-react';
-import { speakText } from '../../utils/voiceUtils';
+import { ElevenLabsService } from '../../utils/ElevenLabsService';
+import { getPhoneticSound } from '../../utils/phoneticMap';
 
 export interface PhonemeSegment {
   text: string;
@@ -20,14 +22,16 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, onPlaySegment, 
   const [activeSegment, setActiveSegment] = useState<number | null>(null);
   const [isPlayingSequence, setIsPlayingSequence] = useState(false);
 
-  const handlePlaySegment = (index: number, text: string) => {
-    if (isPlayingSequence) return;
+  const handlePlaySegment = async (index: number, text: string) => {
     setActiveSegment(index);
-    if (onPlaySegment) {
-      onPlaySegment(text);
-    } else {
-      simulateAudio(text);
+    
+    // Play sound from Azure (using phonetic mapping)
+    try {
+        await ElevenLabsService.play(text);
+    } catch (e) {
+        console.error("Segment playback failed", e);
     }
+
     setTimeout(() => setActiveSegment(null), 500);
   };
 
@@ -35,41 +39,22 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, onPlaySegment, 
     if (isPlayingSequence) return;
     setIsPlayingSequence(true);
 
-    // Sequence playback logic (Visual Sync)
+    // Visual Pulse Sequence (Fast)
     for (let i = 0; i < segments.length; i++) {
         setActiveSegment(i);
-        // We want a short burst for visual tracking? Or actual audio?
-        // Prompt says: "When speaker icon is tapped, dots should pulse in sequence as the sound is played."
-        // Usually means "blended" sound is played, but dots pulse?
-        // OR "Phonemes played in sequence then blended"?
-        // "Tapping the speaker icon triggers the full blended word... dots should pulse in sequence AS the sound is played."
-        // If the sound is "cat", mapping start/end to dots is hard without timestamp data.
-        // I will do a rapid pulse sequence (100ms each) then play the word.
-        
-        // Actually best effort: 
-        await new Promise(r => setTimeout(r, 200)); 
+        await new Promise(r => setTimeout(r, 150)); 
     }
     setActiveSegment(null);
 
-    // Play Word
-    if (onPlayWord) {
-      onPlayWord(word);
-    } else {
-      simulateAudio(word);
+    // Play Full Word
+    try {
+        // Use ElevenLabs AI for the full word
+        await ElevenLabsService.play(word);
+    } catch (e) {
+        console.error("Word playback failed", e);
     }
     
     setIsPlayingSequence(false);
-  };
-
-  /* import { speakText, stopSpeaking } from '../../utils/voiceUtils'; */
-  /* Add import at top manually or just assume it is there for this tool */
-
-  const simulateAudio = (text: string) => {
-    // Uses the friendly voice utility
-    speakText(text, {
-      rate: 0.8,
-      pitch: 1.1
-    });
   };
 
   return (
@@ -80,9 +65,9 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, onPlaySegment, 
         {segments.map((seg, index) => {
           // Determine color based on type if not provided
           const baseColor = seg.color || (
-            seg.type === 'vowel' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 border-red-200 dark:border-red-800' :
-            seg.type === 'digraph' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 border-purple-200 dark:border-purple-800' :
-            'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+            seg.type === 'vowel' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800' :
+            seg.type === 'digraph' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' :
+            'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
           );
 
           return (
@@ -93,7 +78,7 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, onPlaySegment, 
                     relative w-20 h-24 sm:w-24 sm:h-32 rounded-2xl border-2 flex items-center justify-center
                     transition-all duration-200 hover:-translate-y-1 active:scale-95
                     ${baseColor}
-                    ${activeSegment === index ? 'ring-4 ring-blue-400 dark:ring-blue-500 ring-opacity-50 scale-105 z-10' : ''}
+                    ${activeSegment === index ? 'ring-4 ring-teal-400 dark:ring-teal-500 ring-opacity-50 scale-105 z-10' : ''}
                 `}
                 >
                 <span className="text-3xl sm:text-4xl font-bold font-lexend">{seg.text}</span>
@@ -111,7 +96,7 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, onPlaySegment, 
                         className={`
                             w-6 h-6 rounded-full transition-all duration-300
                             ${activeSegment === index 
-                                ? 'bg-slate-800 dark:bg-white scale-125 shadow-lg shadow-blue-500/50' 
+                                ? 'bg-indigo-600 dark:bg-white scale-125 shadow-lg shadow-teal-500/50' 
                                 : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
                             }
                         `}

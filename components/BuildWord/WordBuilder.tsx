@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { DndContext, useDraggable, useDroppable, DragEndEvent, useSensor, useSensors, MouseSensor, TouchSensor } from '@dnd-kit/core';
 import { X, Volume2 } from 'lucide-react';
-import { speakText } from '../../utils/voiceUtils';
+import { ElevenLabsService } from '../../utils/ElevenLabsService';
 
 type LetterCategory = 'vowel' | 'consonant';
 
@@ -17,7 +16,7 @@ const DraggableTile: React.FC<{ id: string, letter: string, category: LetterCate
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined;
 
-  const bgColor = category === 'vowel' ? 'bg-red-500' : 'bg-blue-600';
+  const bgColor = category === 'vowel' ? 'bg-teal-500' : 'bg-indigo-600';
 
   return (
     <div 
@@ -43,12 +42,12 @@ const WordSlot: React.FC<{ id: string, content: { id: string, letter: string, ca
       ref={setNodeRef}
       className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
         isMagicETarget 
-          ? 'bg-yellow-100 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] scale-110' 
+          ? 'bg-teal-50 border-teal-400 shadow-[0_0_15px_rgba(45,212,191,0.5)] scale-110' 
           : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 dashed-border'
       }`}
     >
       {content ? (
-        <div className={`w-full h-full ${content.category === 'vowel' ? 'bg-red-500' : 'bg-blue-600'} text-white rounded-lg flex items-center justify-center text-3xl font-bold font-lexend`}>
+        <div className={`w-full h-full ${content.category === 'vowel' ? 'bg-teal-500' : 'bg-indigo-600'} text-white rounded-lg flex items-center justify-center text-3xl font-bold font-lexend`}>
           {content.letter}
         </div>
       ) : (
@@ -64,6 +63,8 @@ const WordBuilder: React.FC = () => {
     useSensor(TouchSensor)
   );
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  
   // Initial supply of letters
   const [letters] = useState<{ id: string, letter: string, category: LetterCategory }[]>([
     { id: 'l1', letter: 'a', category: 'vowel' },
@@ -143,16 +144,36 @@ const WordBuilder: React.FC = () => {
       setMagicVowelIndex(null);
   };
 
-  const playSound = (type: string) => {
-      // Use Friendly Voice Utils
+  const playSound = async (type: string) => {
+      // Use ElevenLabs Service
       if (type === 'read') {
           // Construct the word
           const word = slots.map(s => s ? s.letter : '_').join('').replace(/_/g, '');
           if (word.length > 0) {
-              speakText(word, { rate: 0.8, pitch: 1.1 });
+              setIsPlaying(true);
+              try {
+                  // Use Groq to get "cuh... ah... tuh... cat"
+                  let speechText = word;
+                  try {
+                      // Dynamically import to avoid top-level issues if not ready
+                      const { GroqService } = await import('../../utils/GroqService');
+                      const phonetics = await GroqService.getPhoneticSegment(word);
+                      if (phonetics) speechText = phonetics;
+                  } catch (err) {
+                      console.warn("Groq failed, falling back to simple word", err);
+                  }
+
+                  await ElevenLabsService.play(speechText, {
+                      onComplete: () => setIsPlaying(false)
+                  });
+              } catch (e) {
+                  console.error(e);
+                  setIsPlaying(false);
+              }
           }
       } else if (type === 'magic') {
-          speakText("Magic E activated!", { rate: 1.1, pitch: 1.2 });
+          // Quick feedback
+          ElevenLabsService.play("Magic E activated!");
       }
   };
 
@@ -227,13 +248,13 @@ const WordBuilder: React.FC = () => {
                                          <path 
                                             d="M 1 40 Q 50 -10 100% 40" 
                                             fill="none" 
-                                            stroke="#FACC15" 
+                                            stroke="#2dd4bf" 
                                             strokeWidth="4" 
                                             strokeDasharray="8 4"
-                                            className="animate-dash"
+                                            className={`${isPlaying ? 'animate-glow-path' : 'animate-dash'}`}
                                          />
-                                         <circle cx="1" cy="40" r="4" fill="#FACC15" />
-                                         <circle cx="100%" cy="40" r="4" fill="#FACC15" />
+                                         <circle cx="1" cy="40" r="4" fill="#2dd4bf" />
+                                         <circle cx="100%" cy="40" r="4" fill="#2dd4bf" />
                                      </svg>
                                  )}
                              </div>
@@ -255,7 +276,7 @@ const WordBuilder: React.FC = () => {
             {/* Read Word Button (Appears if at least one letter) */}
             {slots.some(s => s !== null) && (
                 <div className="flex justify-center animate-fade-in-up">
-                    <button onClick={() => playSound('read')} className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
+                    <button onClick={() => playSound('read')} className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
                         <Volume2 size={20} />
                         Read Word
                     </button>
