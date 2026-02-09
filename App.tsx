@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import LabSoundBoardPage from './pages/LabSoundBoardPage';
+import PerformancePage from './pages/PerformancePage';
 import SettingsPage from './pages/SettingsPage';
 import FeaturesPage from './pages/FeaturesPage';
 import AboutPage from './pages/AboutPage';
@@ -31,6 +32,7 @@ const App: React.FC = () => {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="lab" element={<LabSoundBoardPage />} />
+          <Route path="performance" element={<PerformancePage />} />
           <Route path="settings" element={<SettingsPage />} />
           {/* Redirects for legacy routes if user has bookmarks */}
           <Route path="wassce" element={<Navigate to="/dashboard/lab" replace />} />

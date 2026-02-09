@@ -91,15 +91,15 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({ title, text, initialS
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800">
+    <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-[#022d62]/5">
       <div className="flex items-center justify-between mb-6">
-         <h3 className="text-xl font-bold font-outfit text-slate-900 dark:text-white">{title}</h3>
+         <h3 className="text-xl font-bold font-outfit text-[#022d62]">{title}</h3>
          
          {/* Controls */}
          <div className="flex items-center gap-4">
              {/* Speed Slider */}
-            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-              <span className="text-xs font-bold text-slate-500">Slow</span>
+             <div className="flex items-center gap-2 bg-[#e7effc] px-3 py-1 rounded-full">
+              <span className="text-xs font-bold text-[#022d62]/40">Slow</span>
               <input 
                  type="range" 
                  min="0.5" 
@@ -107,36 +107,36 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({ title, text, initialS
                  step="0.1" 
                  value={speed} 
                  onChange={handleSpeedChange} 
-                 className="w-20 accent-blue-600 cursor-pointer"
+                 className="w-20 accent-[#fb9610] cursor-pointer"
               />
-              <span className="text-xs font-bold text-slate-500">Fast</span>
+              <span className="text-xs font-bold text-[#022d62]/40">Fast</span>
             </div>
 
             <button 
               onClick={handlePlay}
-              className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${isPlaying ? 'bg-yellow-400 text-black' : 'bg-indigo-600 text-white hover:scale-105'}`}
+              className={`w-12 h-12 flex items-center justify-center rounded-full transition-all shadow-lg ${isPlaying ? 'bg-[#fb9610] text-white' : 'bg-[#022d62] text-white hover:scale-110 active:scale-95'}`}
             >
               {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
             </button>
             
             <button
                onClick={handleStop}
-               className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 transition-colors"
+               className="w-10 h-10 flex items-center justify-center rounded-full bg-[#e7effc] text-[#022d62]/40 hover:text-red-500 transition-colors"
             >
                <RotateCcw size={20} />
             </button>
          </div>
       </div>
 
-      <div className={`text-2xl sm:text-3xl font-lexend leading-relaxed text-slate-400 dark:text-slate-500 transition-all duration-500 ${privacyMode && !isPlaying ? 'blur-md select-none hover:blur-none' : ''}`}>
+      <div className={`text-2xl sm:text-3xl font-lexend leading-relaxed text-[#022d62]/20 transition-all duration-500 ${privacyMode && !isPlaying ? 'blur-md select-none hover:blur-none' : ''}`}>
         {words.map((word, i) => (
           <span 
              key={i} 
              className={`inline-block mr-2 transition-colors duration-200 ${
                i === activeIndex 
-                 ? 'text-teal-500 dark:text-teal-400 font-bold scale-105 transform' 
+                 ? 'text-[#fb9610] font-bold scale-105 transform' 
                  : i < activeIndex 
-                    ? 'text-slate-800 dark:text-slate-300' 
+                    ? 'text-[#022d62]' 
                     : ''
              }`}
           >

@@ -18,105 +18,94 @@ interface ElkoninBoxProps {
   showDots?: boolean;
 }
 
-const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, onPlaySegment, onPlayWord, showDots = true }) => {
+const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, showDots = true }) => {
   const [activeSegment, setActiveSegment] = useState<number | null>(null);
-  const [isPlayingSequence, setIsPlayingSequence] = useState(false);
+  const [isPlayingFull, setIsPlayingFull] = useState(false);
 
   const handlePlaySegment = async (index: number, text: string) => {
     setActiveSegment(index);
-    
-    // Play sound from Azure (using phonetic mapping)
     try {
         await ElevenLabsService.play(text);
     } catch (e) {
         console.error("Segment playback failed", e);
     }
-
     setTimeout(() => setActiveSegment(null), 500);
   };
 
   const handlePlayWord = async () => {
-    if (isPlayingSequence) return;
-    setIsPlayingSequence(true);
+    if (isPlayingFull) return;
+    setIsPlayingFull(true);
 
-    // Visual Pulse Sequence (Fast)
+    // 1. Slow sequence of individual sounds
     for (let i = 0; i < segments.length; i++) {
         setActiveSegment(i);
-        await new Promise(r => setTimeout(r, 150)); 
+        await ElevenLabsService.play(segments[i].text);
+        await new Promise(r => setTimeout(r, 400)); // Pause between sounds for blending practice
     }
+    
+    // 2. Clear highlights for a tiny beat
     setActiveSegment(null);
+    await new Promise(r => setTimeout(r, 300));
 
-    // Play Full Word
+    // 3. Highlight everything and play full word
+    setActiveSegment(-1); // Special state for "all active"
     try {
-        // Use ElevenLabs AI for the full word
         await ElevenLabsService.play(word);
     } catch (e) {
         console.error("Word playback failed", e);
     }
     
-    setIsPlayingSequence(false);
+    await new Promise(r => setTimeout(r, 600));
+    setActiveSegment(null);
+    setIsPlayingFull(false);
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-slate-100 dark:border-slate-800">
+    <div className="h-full flex flex-col items-center justify-center p-8">
       
-      {/* The Sound Boxes */}
-      <div className="flex flex-wrap justify-center gap-3">
-        {segments.map((seg, index) => {
-          // Determine color based on type if not provided
-          const baseColor = seg.color || (
-            seg.type === 'vowel' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800' :
-            seg.type === 'digraph' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' :
-            'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
-          );
-
-          return (
-            <div key={`${word}-${index}`} className="flex flex-col items-center gap-4">
-                <button
-                onClick={() => handlePlaySegment(index, seg.text)}
-                className={`
-                    relative w-20 h-24 sm:w-24 sm:h-32 rounded-2xl border-2 flex items-center justify-center
-                    transition-all duration-200 hover:-translate-y-1 active:scale-95
-                    ${baseColor}
-                    ${activeSegment === index ? 'ring-4 ring-teal-400 dark:ring-teal-500 ring-opacity-50 scale-105 z-10' : ''}
-                `}
-                >
-                <span className="text-3xl sm:text-4xl font-bold font-lexend">{seg.text}</span>
-                
-                {/* Type Indicator */}
-                <span className="absolute bottom-2 text-[10px] uppercase tracking-wider font-bold opacity-50">
-                    {seg.type}
-                </span>
-                </button>
-
-                {/* Sound Dot */}
-                {showDots && (
-                    <button
-                        onClick={() => handlePlaySegment(index, seg.text)}
-                        className={`
-                            w-6 h-6 rounded-full transition-all duration-300
-                            ${activeSegment === index 
-                                ? 'bg-indigo-600 dark:bg-white scale-125 shadow-lg shadow-teal-500/50' 
-                                : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'
-                            }
-                        `}
-                    />
-                )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Full Word Control */}
+      {/* 1. Speaker Icon - Plays Full Word */}
       <button 
         onClick={handlePlayWord}
-        className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+        disabled={isPlayingFull || activeSegment !== null}
+        className="mb-16 text-slate-800 dark:text-slate-200 hover:scale-110 transition-transform active:scale-95 disabled:opacity-50"
       >
-        <Volume2 size={20} className="text-slate-600 dark:text-slate-400" />
-        <span className="text-lg font-bold text-slate-900 dark:text-white font-lexend tracking-wide">
-          {word}
-        </span>
+        <Volume2 size={80} strokeWidth={1.5} className={isPlayingFull ? 'animate-pulse' : ''} />
       </button>
+
+      {/* 2. Massive Word Display */}
+      <div className="relative group">
+        <div className="flex items-end justify-center">
+            {segments.map((seg, index) => {
+                const isActive = activeSegment === index || activeSegment === -1;
+                return (
+                    <div key={index} className="flex flex-col items-center">
+                        <span 
+                            className={`
+                                text-[10rem] font-black font-outfit leading-none select-none transition-all duration-300
+                                ${isActive ? 'text-black dark:text-white scale-105' : 'text-slate-300 dark:text-slate-700'}
+                            `}
+                        >
+                            {seg.text}
+                        </span>
+                        
+                        {/* 3. The Mapping Dots */}
+                        <button
+                            onClick={() => handlePlaySegment(index, seg.text)}
+                            className={`
+                                mt-12 w-6 h-6 rounded-full transition-all duration-500
+                                ${isActive ? 'bg-black dark:bg-white scale-125' : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700'}
+                            `}
+                        />
+                    </div>
+                );
+            })}
+        </div>
+      </div>
+
+      {/* 4. Instructions */}
+      <p className="mt-20 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.3em] text-sm animate-pulse">
+        Tap the dots to hear sounds
+      </p>
     </div>
   );
 };

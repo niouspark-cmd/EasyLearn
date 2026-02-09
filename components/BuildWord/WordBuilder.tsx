@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { DndContext, useDraggable, useDroppable, DragEndEvent, useSensor, useSensors, MouseSensor, TouchSensor } from '@dnd-kit/core';
-import { X, Volume2 } from 'lucide-react';
+import { Trash2, Volume2 } from 'lucide-react';
 import { ElevenLabsService } from '../../utils/ElevenLabsService';
 
 type LetterCategory = 'vowel' | 'consonant';
 
-// Draggable Letter Tile
 const DraggableTile: React.FC<{ id: string, letter: string, category: LetterCategory }> = ({ id, letter, category }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: id,
@@ -16,7 +15,7 @@ const DraggableTile: React.FC<{ id: string, letter: string, category: LetterCate
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined;
 
-  const bgColor = category === 'vowel' ? 'bg-teal-500' : 'bg-indigo-600';
+  const bgColor = category === 'vowel' ? 'bg-[#fb9610]' : 'bg-[#022d62]';
 
   return (
     <div 
@@ -24,14 +23,13 @@ const DraggableTile: React.FC<{ id: string, letter: string, category: LetterCate
       style={style} 
       {...listeners} 
       {...attributes}
-      className={`w-14 h-14 sm:w-16 sm:h-16 ${bgColor} text-white rounded-xl shadow-md flex items-center justify-center text-2xl font-bold font-lexend cursor-grab active:cursor-grabbing touch-none`}
+      className={`w-14 h-14 sm:w-16 sm:h-16 ${bgColor} text-white rounded-xl shadow-md flex items-center justify-center text-2xl font-black font-outfit cursor-grab active:cursor-grabbing touch-none border-b-4 border-black/20`}
     >
       {letter}
     </div>
   );
 };
 
-// Droppable Slot
 const WordSlot: React.FC<{ id: string, content: { id: string, letter: string, category: LetterCategory } | null, index: number, isMagicETarget: boolean }> = ({ id, content, index, isMagicETarget }) => {
   const { setNodeRef } = useDroppable({
     id: id,
@@ -40,254 +38,162 @@ const WordSlot: React.FC<{ id: string, content: { id: string, letter: string, ca
   return (
     <div 
       ref={setNodeRef}
-      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${
+      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-[1.5rem] border-2 flex items-center justify-center transition-all duration-500 shadow-inner ${
         isMagicETarget 
-          ? 'bg-teal-50 border-teal-400 shadow-[0_0_15px_rgba(45,212,191,0.5)] scale-110' 
-          : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 dashed-border'
+          ? 'bg-orange-50 border-[#fb9610] ring-4 ring-orange-500/10 scale-105 shadow-md' 
+          : content ? 'bg-white border-[#022d62]/20 shadow-sm' : 'bg-[#e7effc]/20 border-dashed border-[#022d62]/10'
       }`}
     >
       {content ? (
-        <div className={`w-full h-full ${content.category === 'vowel' ? 'bg-teal-500' : 'bg-indigo-600'} text-white rounded-lg flex items-center justify-center text-3xl font-bold font-lexend`}>
+        <div className={`w-full h-full ${content.category === 'vowel' ? 'bg-[#fb9610]' : 'bg-[#022d62]'} text-white rounded-xl flex items-center justify-center text-3xl font-black font-outfit animate-pop-in border-b-4 border-black/20`}>
           {content.letter}
         </div>
       ) : (
-        <span className="text-slate-300 text-sm font-bold opacity-50">{index + 1}</span>
+        <div className="flex flex-col items-center opacity-10">
+            <span className="text-xl font-black">{index + 1}</span>
+        </div>
       )}
     </div>
   );
 };
 
+
 const WordBuilder: React.FC = () => {
   const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor)
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } })
   );
 
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  // Initial supply of letters
   const [letters] = useState<{ id: string, letter: string, category: LetterCategory }[]>([
     { id: 'l1', letter: 'a', category: 'vowel' },
     { id: 'l2', letter: 'e', category: 'vowel' },
     { id: 'l3', letter: 'i', category: 'vowel' },
     { id: 'l4', letter: 'o', category: 'vowel' },
     { id: 'l5', letter: 'u', category: 'vowel' },
-    { id: 'l6', letter: 'c', category: 'consonant' },
+    { id: 'l10', letter: 's', category: 'consonant' },
     { id: 'l7', letter: 't', category: 'consonant' },
     { id: 'l8', letter: 'p', category: 'consonant' },
     { id: 'l9', letter: 'm', category: 'consonant' },
-    { id: 'l10', letter: 's', category: 'consonant' },
+    { id: 'l6', letter: 'c', category: 'consonant' },
     { id: 'l11', letter: 'h', category: 'consonant' },
     { id: 'l12', letter: 'r', category: 'consonant' },
-    // Digraphs
     { id: 'd1', letter: 'sh', category: 'consonant' },
     { id: 'd2', letter: 'ch', category: 'consonant' },
-    { id: 'd3', letter: 'th', category: 'consonant' },
-    { id: 'd4', letter: 'ng', category: 'consonant' },
-    { id: 'd5', letter: 'ck', category: 'consonant' },
-    { id: 'd6', letter: 'ai', category: 'vowel' },
     { id: 'd7', letter: 'ee', category: 'vowel' },
-    { id: 'd8', letter: 'oa', category: 'vowel' },
   ]);
 
-  // Workbench state: 5 slots
-  const [slots, setSlots] = useState<( { id: string, letter: string, category: LetterCategory } | null )[]>([null, null, null, null, null]);
-  
-  // Magic Vowel Logic
+  const [slots, setSlots] = useState<( { id: string, letter: string, category: LetterCategory } | null )[]>([null, null, null, null]);
   const [magicVowelIndex, setMagicVowelIndex] = useState<number | null>(null);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (over && active.data.current) {
         const data = active.data.current as { letter: string, category: LetterCategory };
         const slotIndex = parseInt(String(over.id).replace('slot-', ''));
         const newSlots = [...slots];
-        
-        // Check if item was already in a slot (to move it)
         const previousSlotIndex = slots.findIndex(s => s?.id === active.id);
-        if (previousSlotIndex !== -1) {
-            newSlots[previousSlotIndex] = null;
-        }
-
-        newSlots[slotIndex] = {
-            id: active.id as string,
-            letter: data.letter,
-            category: data.category
-        };
-        
+        if (previousSlotIndex !== -1) newSlots[previousSlotIndex] = null;
+        newSlots[slotIndex] = { id: active.id as string, letter: data.letter, category: data.category };
         setSlots(newSlots);
         checkMagicE(newSlots);
+        ElevenLabsService.play(data.letter);
     }
   };
 
   const checkMagicE = (currentSlots: ( { id: string, letter: string, category: LetterCategory } | null )[]) => {
-      // Simple logic: If last filled slot is 'e', and there is a vowel before it separated by 1 consonant.
-      // E.g. [c] [a] [p] [e]
-      
-      // Find index of 'e'
       const eIndex = currentSlots.findIndex(s => s?.letter === 'e');
-      
-      if (eIndex > 1) { // Needs at least 2 slots before it (V + C)
+      if (eIndex > 1) {
           const consonant = currentSlots[eIndex - 1];
           const vowel = currentSlots[eIndex - 2];
-
-          if (
-              consonant && consonant.category === 'consonant' &&
-              vowel && vowel.category === 'vowel'
-          ) {
+          if (consonant?.category === 'consonant' && vowel?.category === 'vowel') {
               setMagicVowelIndex(eIndex - 2);
-              playSound('magic');
+              ElevenLabsService.play("Magic E makes the vowel say its name!");
               return;
           }
       }
       setMagicVowelIndex(null);
   };
 
-  const playSound = async (type: string) => {
-      // Use ElevenLabs Service
-      if (type === 'read') {
-          // Construct the word
-          const word = slots.map(s => s ? s.letter : '_').join('').replace(/_/g, '');
-          if (word.length > 0) {
-              setIsPlaying(true);
-              try {
-                  // Use Groq to get "cuh... ah... tuh... cat"
-                  let speechText = word;
-                  try {
-                      // Dynamically import to avoid top-level issues if not ready
-                      const { GroqService } = await import('../../utils/GroqService');
-                      const phonetics = await GroqService.getPhoneticSegment(word);
-                      if (phonetics) speechText = phonetics;
-                  } catch (err) {
-                      console.warn("Groq failed, falling back to simple word", err);
-                  }
-
-                  await ElevenLabsService.play(speechText, {
-                      onComplete: () => setIsPlaying(false)
-                  });
-              } catch (e) {
-                  console.error(e);
-                  setIsPlaying(false);
-              }
+  const playSound = async () => {
+      const word = slots.map(s => s ? s.letter : '').join('');
+      if (word.length > 0) {
+          setIsPlaying(true);
+          try {
+              let speechText = word;
+              const { GroqService } = await import('../../utils/GroqService');
+              const phonetics = await GroqService.getPhoneticSegment(word);
+              if (phonetics) speechText = phonetics;
+              await ElevenLabsService.play(speechText);
+          } catch (e) {
+              console.error(e);
+          } finally {
+              setIsPlaying(false);
           }
-      } else if (type === 'magic') {
-          // Quick feedback
-          ElevenLabsService.play("Magic E activated!");
       }
-  };
-
-  const clearWorkbench = () => {
-    setSlots([null, null, null, null, null]);
-    setMagicVowelIndex(null);
   };
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-10">
         
         {/* Workbench Area */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-4 sm:p-8 shadow-xl border border-blue-100 dark:border-blue-900/30 relative overflow-visible">
-            <div className="absolute top-4 right-4">
-                <button onClick={clearWorkbench} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                    <X size={24} />
+        <div className="bg-white rounded-[4rem] p-10 shadow-2xl border-4 border-[#e7effc] relative">
+            <div className="absolute top-6 right-6">
+                <button onClick={() => setSlots([null, null, null, null])} className="p-4 bg-rose-50 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                    <Trash2 size={24} />
                 </button>
             </div>
             
-            <h3 className="text-center text-slate-500 dark:text-slate-400 font-bold mb-6 font-lexend uppercase tracking-widest text-sm">Build a Word</h3>
+            <p className="text-center text-[#fb9610] font-black mb-10 uppercase tracking-[0.3em] text-sm">Drag Letters Below</p>
             
-            <div className="flex justify-center gap-2 sm:gap-4 mb-8 relative">
-                {/* Magic E Arc Overlay */}
+            <div className="flex justify-center gap-4 mb-12 relative flex-wrap sm:flex-nowrap">
                 {magicVowelIndex !== null && (
-                    <div 
-                        className="absolute -top-8 h-12 pointer-events-none z-10 animate-fade-in"
-                        style={{
-                            // Calculate position based on slot index.
-                            // Each slot is roughly w-16(64px) + gap-2(8px) = 72px on mobile
-                            // w-20(80px) + gap-4(16px) = 96px on desktop
-                            // Accessing direct pixel values is hard, so we use % or estimated calc.
-                            // Better: Render it relative to the Vowel slot? No, it spans multiple.
-                            // Let's rely on the fact that slots are centered.
-                            // The Arc spans 3 slots: [Vowel] [Cons] [E]
-                            // Width approx: 3 slots gap included.
-                            // Actually, simpler: render it inside the Vowel slot but with width 300%?
-                            // No, flex gap messes that up.
-                            // Let's just create a full width absolute container and position the SVG absolutely.
-                            left: '0', right: '0'
-                        }}
-                    >
-                        {/* We need to precisely target the centers. This is pure CSS guessing game without refs. 
-                            However, since we know indices, we can try to "float" it.
-                            Let's try a safer visual: An arc connecting the vowel and the E using a dedicated component that we calculate width for?
-                            Or, more robustly: Just draw it over the slots it connects? 
-                            Let's use a simplified approach: Render it as a child of the `flex` container, but absolute positioning.
-                        */}
-                       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            {/* This is too hard to coordinate with DOM elements blindly. */}
-                       </svg>
-                    </div>
-                )}
-
-                {/* Better Approach: Render the Arc PIECES inside the slots? No. 
-                    Let's use the assumption that the slots are uniform.
-                    On desktop: 80px + 16px gap = 96px width per unit.
-                    On mobile: 64px + 8px gap = 72px width per unit.
-                    The start index is `magicVowelIndex`.
-                    The offset is `magicVowelIndex * UnitWidth`.
-                    The width of arc is `2 * UnitWidth` to span from center of i to center of i+2.
-                */}
-                
-                {magicVowelIndex !== null && (
-                     <div className="absolute -top-12 left-0 w-full h-12 pointer-events-none flex justify-center gap-2 sm:gap-4">
-                        {/* We mirror the slots structure but only render the arc in the right place */}
+                     <div className="absolute -top-16 left-0 w-full h-16 pointer-events-none flex justify-center gap-4">
                         {slots.map((_, i) => (
-                             <div key={i} className={`w-16 sm:w-20 h-0 flex justify-center relative`}>
+                             <div key={i} className={`w-24 sm:w-32 h-0 flex justify-center relative`}>
                                  {i === magicVowelIndex && (
-                                     // This is the Vowel Slot. We need an arc starting here and going to i+2
-                                     <svg className="absolute top-0 left-1/2 w-[calc(200%+1rem)] sm:w-[calc(200%+2rem)] h-12 overflow-visible" style={{ marginLeft: '-1px' }}>
-                                         <path 
-                                            d="M 1 40 Q 50 -10 100% 40" 
-                                            fill="none" 
-                                            stroke="#2dd4bf" 
-                                            strokeWidth="4" 
-                                            strokeDasharray="8 4"
-                                            className={`${isPlaying ? 'animate-glow-path' : 'animate-dash'}`}
-                                         />
-                                         <circle cx="1" cy="40" r="4" fill="#2dd4bf" />
-                                         <circle cx="100%" cy="40" r="4" fill="#2dd4bf" />
+                                     <svg className="absolute top-0 left-1/2 w-[calc(200%+1rem)] sm:w-[calc(200%+2rem)] h-16 overflow-visible">
+                                         <path d="M 1 40 Q 50 -20 100% 40" fill="none" stroke="#fb9610" strokeWidth="6" strokeDasharray="12 6" className="animate-dash" />
+                                         <circle cx="1" cy="40" r="6" fill="#fb9610" />
+                                         <circle cx="100%" cy="40" r="6" fill="#fb9610" />
                                      </svg>
                                  )}
                              </div>
                         ))}
                      </div>
                 )}
-
+                
                 {slots.map((slot, i) => (
-                    <WordSlot 
-                        key={`slot-${i}`} 
-                        id={`slot-${i}`} 
-                        index={i} 
-                        content={slot} 
-                        isMagicETarget={i === magicVowelIndex}
-                    />
+                    <WordSlot key={`slot-${i}`} id={`slot-${i}`} index={i} content={slot} isMagicETarget={i === magicVowelIndex} />
                 ))}
             </div>
 
-            {/* Read Word Button (Appears if at least one letter) */}
             {slots.some(s => s !== null) && (
-                <div className="flex justify-center animate-fade-in-up">
-                    <button onClick={() => playSound('read')} className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-transform">
-                        <Volume2 size={20} />
-                        Read Word
+                <div className="flex justify-center">
+                    <button 
+                        onClick={playSound} 
+                        disabled={isPlaying}
+                        className={`
+                            flex items-center gap-4 px-12 py-6 rounded-[2.5rem] font-black text-2xl shadow-2xl transition-all border-b-8
+                            ${isPlaying 
+                                ? 'bg-slate-100 text-slate-400 border-slate-200' 
+                                : 'bg-[#022d62] text-white hover:bg-black active:translate-y-2 border-black'
+                            }
+                        `}
+                    >
+                        <Volume2 size={32} className={isPlaying ? 'animate-pulse' : ''} />
+                        <span>{isPlaying ? 'Reading...' : 'Listen to My Word'}</span>
                     </button>
                 </div>
             )}
         </div>
 
         {/* Letter Tray */}
-        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-[2rem] p-6 lg:p-8">
-            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-                {letters.map((l: { id: string, letter: string, category: LetterCategory }) => (
+        <div className="bg-[#e7effc]/30 rounded-[4rem] p-10 border-4 border-[#e7effc] shadow-inner">
+            <h4 className="text-center text-[#022d62]/30 font-black uppercase tracking-widest text-xs mb-8">Your Letter Kit</h4>
+            <div className="flex flex-wrap justify-center gap-6">
+                {letters.map((l) => (
                     <DraggableTile key={l.id} id={l.id} letter={l.letter} category={l.category} />
                 ))}
             </div>

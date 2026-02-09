@@ -2,14 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand-navy: #022d62;
+  --brand-orange: #fb9610;
+  --brand-cloud: #e7effc;
+}
+
+@layer base {
+  body {
+    @apply bg-[#e7effc] text-[#022d62] font-outfit transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-[#011627] text-[#e7effc];
+  }
+  .dark .bg-white {
+    @apply bg-slate-900;
+  }
+  .dark .text-slate-900 {
+    @apply text-white;
+  }
+  .dark .text-slate-800 {
+    @apply text-slate-100;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#022d62] text-white hover:bg-[#033d82] transition-all font-bold px-6 py-3 rounded-2xl;
+  }
+  .btn-secondary {
+    @apply bg-[#fb9610] text-white hover:bg-[#e88a0e] transition-all font-bold px-6 py-3 rounded-2xl;
+  }
+  .card-premium {
+    @apply bg-white rounded-[2.5rem] shadow-xl border border-[#e7effc];
+  }
+}
+
 @layer utilities {
   .animate-glow-path {
     animation: glow-path 2s infinite;
+  }
+  .text-brand-navy { color: #022d62; }
+  .text-brand-orange { color: #fb9610; }
+  .text-brand-cloud { color: #e7effc; }
+  
+  .bg-brand-navy { background-color: #022d62; }
+  .bg-brand-orange { background-color: #fb9610; }
+  .bg-brand-cloud { background-color: #e7effc; }
+  
+  .border-brand-navy { border-color: #022d62; }
+  .border-brand-orange { border-color: #fb9610; }
+  .border-brand-cloud { border-color: #e7effc; }
+}
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
 @keyframes glow-path {
   0% { stroke-opacity: 0.5; stroke-width: 4; }
-  50% { stroke-opacity: 1; stroke-width: 6; filter: drop-shadow(0 0 8px #2dd4bf); }
+  50% { stroke-opacity: 1; stroke-width: 6; filter: drop-shadow(0 0 8px #022d62); }
   100% { stroke-opacity: 0.5; stroke-width: 4; }
 }
+
+@keyframes slide-in-right {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+

@@ -18,20 +18,17 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [userAudioUrl, setUserAudioUrl] = useState<string | null>(null);
-  /* Restoring missing logic */
   const [showCompare, setShowCompare] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   const currentItem = LESSON_DATA[currentIndex];
-  const progress = ((currentIndex + 1) / LESSON_DATA.length) * 100;
   
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<'correct' | 'incorrect' | null>(null);
   const [transcribedText, setTranscribedText] = useState<string | null>(null);
 
   useEffect(() => {
-    // Reset state on step change
     setShowCompare(false);
     setUserAudioUrl(null);
     setVerificationResult(null);
@@ -53,25 +50,16 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
           const text = await GroqService.transcribeAudio(blob);
           setTranscribedText(text);
 
-          // Simple containment check (case insensitive)
-          // e.g. Target "s", transcribed "Yes" or "S" or "Es"
-          // We check if the target letter appears in the transcription or generic close matches
           const target = currentItem.letter.toLowerCase();
           const spoken = text.toLowerCase();
           
           let isMatch = spoken.includes(target);
-          
-          // Heuristic: If transcription is empty but blob was sent, it might be quiet.
           if (!text) isMatch = false;
 
           if (isMatch) {
-              // Auto-advance after success
               setVerificationResult('correct');
-              setShowCompare(true); // Ensure UI shows success state
-              
-              // Play a happy sound effect (optional, using Web Audio API or just visual for now)
-              new Audio('/assets/audio/success.mp3').play().catch(() => {}); // Optimistic play
-
+              setShowCompare(true);
+              new Audio('/assets/audio/success.mp3').play().catch(() => {}); 
               setTimeout(() => {
                   handleNext();
               }, 1500);
@@ -103,8 +91,6 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
         const url = URL.createObjectURL(audioBlob);
         setUserAudioUrl(url);
         setShowCompare(true);
-        
-        // Trigger verification
         verifyPronunciation(audioBlob);
       };
 
@@ -112,7 +98,6 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Please allow microphone access to record.");
     }
   };
 
@@ -133,7 +118,6 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
   const [isLessonComplete, setIsLessonComplete] = useState(false);
 
   useEffect(() => {
-    // Reset EVERYTHING when the stage changes (Level 1 -> Level 2)
     setCurrentIndex(0);
     setIsLessonComplete(false);
     setIsRecording(false);
@@ -143,15 +127,36 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
     setTranscribedText(null);
   }, [stage]);
 
-  // ... (keep playReference, verifyPronunciation, startRecording, stopRecording, playUserAudio) ...
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
 
   const handleNext = () => {
     if (currentIndex < LESSON_DATA.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      // Show completion screen instead of immediate exit
       setIsLessonComplete(true);
-      // Play success sound
       new Audio('/assets/audio/level-complete.mp3').play().catch(() => {});
     }
   };
@@ -166,29 +171,29 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
 
   if (isLessonComplete) {
       return (
-        <div className="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 p-8 text-center animate-fade-in-up">
-            <div className="mb-6 flex justify-center">
-                <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+        <div className="w-full max-w-md mx-auto bg-white rounded-[3rem] shadow-2xl p-10 text-center animate-fade-in-up border-8 border-[#e7effc]">
+            <div className="mb-8 flex justify-center">
+                <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xl animate-bounce">
                     <CheckCircle size={48} />
                 </div>
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
-                {stage === 'pure-sounds' ? 'Level 1 Completed!' : 'Level 2 Completed!'}
+            <h2 className="text-3xl font-black text-[#022d62] mb-4 font-outfit">
+                {stage === 'pure-sounds' ? 'You Did It!' : 'Amazing Job!'}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
+            <p className="text-[#022d62]/60 mb-10 font-bold text-lg leading-relaxed">
                 {stage === 'pure-sounds' 
-                    ? 'You have mastered the pure sounds. Now let\'s connect them to letters.' 
-                    : 'You strictly matched sounds to letters! The full chart is unlocked.'}
+                    ? 'You learned all the sounds! Now let\'s see the letters.' 
+                    : 'You strictly matched sounds to letters! You unlocked the chart!'}
             </p>
             
             <button 
                 onClick={onComplete}
-                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                className="w-full py-6 bg-[#fb9610] text-white rounded-[2rem] text-xl font-black shadow-2xl shadow-orange-500/30 hover:scale-[1.05] active:scale-95 transition-all flex items-center justify-center gap-4 border-b-8 border-orange-700"
             >
                 {stage === 'pure-sounds' ? (
-                    <>Start Level 2: Sounds & Letters <ArrowRight size={20} /></>
+                    <>Next Level <ArrowRight size={28} /></>
                 ) : (
-                    <>Unlock Full Chart <ArrowRight size={20} /></>
+                    <>See All Sounds <ArrowRight size={28} /></>
                 )}
             </button>
         </div>
@@ -196,153 +201,85 @@ const SatpinLesson: React.FC<{ stage?: 'pure-sounds' | 'letters', onComplete?: (
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 relative">
+    <div 
+      className="h-full flex flex-col items-center justify-center text-center py-12 select-none"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       
-      {/* Header & Progress */}
-      <div className="p-8 pb-0">
-        <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-black text-indigo-500 uppercase tracking-widest">
-                {stage === 'pure-sounds' ? 'Pure Sounds (SATPIN)' : 'Sounds & Letters'}
-            </span>
-            <div className="flex gap-1">
-                {LESSON_DATA.map((_, i) => (
-                    <div key={i} className={`h-1.5 w-4 rounded-full transition-colors ${i <= currentIndex ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`} />
-                ))}
-            </div>
+      {/* Counter: X of X */}
+      <div className="mb-8 text-[#fb9610] font-black text-3xl font-outfit animate-bounce">
+          {currentIndex + 1} of {LESSON_DATA.length}
+      </div>
+
+      {/* Speaker Icon - The Phonics App Style */}
+      <button 
+        onClick={playReference}
+        className="mb-20 text-slate-800 hover:scale-110 transition-transform active:scale-95 p-4 rounded-full"
+      >
+        <Volume2 size={80} strokeWidth={1.5} />
+      </button>
+
+      {/* Massive Text Section */}
+      <div className="flex flex-col items-center gap-12">
+        <h2 className="text-[12rem] font-black leading-none font-outfit text-slate-900 tracking-tight" style={{ fontWeight: 900 }}>
+            {stage === 'pure-sounds' ? '?' : currentItem.letter}
+        </h2>
+
+        {/* Phoneme Dots */}
+        <div className="flex gap-8">
+            <div className="w-5 h-5 bg-black rounded-full" />
+            {stage === 'letters' && <div className="w-5 h-5 bg-black/10 rounded-full" />}
         </div>
       </div>
-      {/* ... rest of render ... */}
 
-      {/* Main Content */}
-      <div className="p-8 text-center">
-        <p className="text-slate-400 text-sm font-medium mb-8 uppercase tracking-wider">
-            {stage === 'pure-sounds' ? 'Listen & Repeat' : 'Match the Sound'}
-        </p>
-
-        {/* Big Letter Card */}
-        <button 
-            onClick={playReference}
-            className="relative w-48 h-48 mx-auto bg-slate-900 dark:bg-black rounded-[3rem] flex flex-col items-center justify-center shadow-2xl active:scale-95 transition-all mb-10 group outline-none ring-4 ring-transparent active:ring-indigo-100"
-        >
-            {stage === 'pure-sounds' ? (
-                // Level 1: Hidden Letter (Pure Sound Focus)
-                <Volume2 size={80} className="text-white opacity-80 group-hover:scale-110 transition-transform duration-300" />
-            ) : (
-                // Level 2: Visible Letter
-                <span className="text-7xl font-black text-white group-hover:scale-110 transition-transform duration-300">
-                    {currentItem.letter.toUpperCase()}
-                </span>
-            )}
-            
-            <div className="mt-4 flex items-center gap-2 text-indigo-300 opacity-60 group-hover:opacity-100 transition-opacity">
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                    {stage === 'pure-sounds' ? 'Tap to listen' : 'Listen'}
-                </span>
-            </div>
-        </button>
-
-        {/* Recording Visualizer / Controls */}
-        <div className="space-y-4 min-h-[140px]">
-            {!showCompare ? (
-                <div className="animate-fade-in">
-                    <button 
-                        onMouseDown={startRecording}
-                        onMouseUp={stopRecording}
-                        onMouseLeave={stopRecording}
-                        onTouchStart={(e) => { e.preventDefault(); startRecording(); }}
-                        onTouchEnd={(e) => { e.preventDefault(); stopRecording(); }}
-                        className={`
-                            w-full py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all select-none
-                            ${isRecording 
-                                ? 'bg-rose-500 text-white scale-95 shadow-rose-500/30' 
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-indigo-500/30'
-                            }
-                        `}
-                    >
-                        <Mic size={24} className={isRecording ? 'animate-pulse' : ''} />
-                        <span>{isRecording ? 'Listening...' : 'Hold to Record'}</span>
-                    </button>
-                    <p className="text-[10px] text-slate-400 mt-3 uppercase font-bold tracking-widest">Release to stop</p>
-                </div>
-            ) : isVerifying ? (
-                <div className="flex flex-col items-center justify-center py-4 animate-fade-in">
-                    <div className="w-6 h-6 border-2 border-indigo-500 border-t-white rounded-full animate-spin mb-2" />
-                    <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Checking pronunciation...</p>
-                </div>
-            ) : (
-                <div className="animate-fade-in-up grid grid-cols-2 gap-3">
-                    {/* Only show retry/play controls if NOT correct yet */}
-                    {verificationResult !== 'correct' && (
-                        <>
+      {/* Simplified Recording Experience */}
+      <div className="mt-24 w-full max-w-xs">
+           {!showCompare ? (
+                <button 
+                    onMouseDown={startRecording}
+                    onMouseUp={stopRecording}
+                    onMouseLeave={stopRecording}
+                    onTouchStart={(e) => { e.preventDefault(); startRecording(); }}
+                    onTouchEnd={(e) => { e.preventDefault(); stopRecording(); }}
+                    className={`
+                        w-full py-6 rounded-full font-black text-2xl shadow-xl transition-all border-b-8
+                        ${isRecording 
+                            ? 'bg-rose-500 text-white border-rose-800 translate-y-2' 
+                            : 'bg-[#fb9610] text-white border-[#b36a0b] active:translate-y-2'
+                        }
+                    `}
+                >
+                    {isRecording ? 'Listening...' : 'Hold & Talk'}
+                </button>
+           ) : (
+                <div className="flex flex-col gap-4 animate-fade-in">
+                    {verificationResult === 'correct' ? (
+                        <button 
+                            onClick={handleNext}
+                            className="w-full py-6 bg-emerald-500 text-white rounded-full font-black text-2xl shadow-xl border-b-8 border-emerald-800 animate-bounce"
+                        >
+                            Next Sound! 🎈
+                        </button>
+                    ) : (
+                        <div className="flex gap-4">
                             <button 
                                 onClick={playUserAudio}
-                                className="py-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-100 dark:border-emerald-800/30 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                                className="flex-1 py-4 bg-slate-100 rounded-2xl font-black text-slate-600 border-b-4 border-slate-200"
                             >
-                                <Play size={20} fill="currentColor" />
-                                My Sound
+                                Hear Me
                             </button>
                             <button 
                                 onClick={() => setShowCompare(false)}
-                                className="py-4 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-2 border-slate-100 dark:border-slate-700 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors"
+                                className="flex-1 py-4 bg-white border-4 border-[#fb9610] rounded-2xl font-black text-[#fb9610]"
                             >
-                                <RotateCcw size={20} />
                                 Retry
                             </button>
-                        </>
+                        </div>
                     )}
-                    
-                    <div className={`col-span-2 text-center p-4 rounded-xl border-2 transition-all duration-300 ${
-                        verificationResult === 'correct' 
-                            ? 'bg-emerald-50 border-emerald-100 text-emerald-700 scale-105 shadow-lg' 
-                            : verificationResult === 'incorrect'
-                            ? 'bg-amber-50 border-amber-100 text-amber-700'
-                            : 'bg-slate-50 border-slate-100 text-slate-400'
-                    }`}>
-                        {verificationResult === 'correct' ? (
-                            <div className="flex flex-col items-center animate-bounce-in">
-                                <span className="text-3xl mb-2">🎉</span>
-                                <span className="text-sm font-black uppercase tracking-widest">Perfect!</span>
-                                <span className="text-[10px] font-medium opacity-60 mt-1">Next sound in 1s...</span>
-                            </div>
-                        ) : verificationResult === 'incorrect' ? (
-                             <div className="flex flex-col items-center">
-                                <span className="text-xl mb-1">🤔</span>
-                                {transcribedText ? (
-                                    <>
-                                        <span className="text-xs font-bold">I heard "{transcribedText}"</span>
-                                        <span className="text-[10px] uppercase tracking-widest opacity-70">Try again!</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="text-xs font-bold text-rose-500">Could not hear you</span>
-                                        <span className="text-[10px] uppercase tracking-widest opacity-70">Speak louder & closer</span>
-                                    </>
-                                )}
-                            </div>
-                        ) : (
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Recording Saved</span>
-                        )}
-                    </div>
                 </div>
-            )}
-        </div>
-      </div>
-
-      {/* Footer Navigation */}
-      <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-        <button 
-            onClick={handlePrev}
-            className={`text-indigo-600 dark:text-indigo-400 font-black px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-colors flex items-center gap-2 ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : ''}`}
-        >
-            <ArrowLeft size={16} /> Back
-        </button>
-
-        <button 
-            onClick={handleNext}
-            className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-3 rounded-xl font-black shadow-lg hover:scale-105 active:scale-95 transition-all text-sm uppercase tracking-wider flex items-center gap-2"
-        >
-            {currentIndex === LESSON_DATA.length - 1 ? 'Finish' : 'Next'} <ArrowRight size={16} />
-        </button>
+           )}
       </div>
 
     </div>

@@ -14,11 +14,7 @@ interface SoundTileProps {
 
 const SoundTile: React.FC<SoundTileProps> = ({ grapheme, phoneme, color = 'bg-blue-600' }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showMic, setShowMic] = useState(false);
   
-  // Assessment Hook
-  const { startListening, isListening, isLoading, score, transcript } = useSpeechAssessment(grapheme); // Match against grapheme for now, ideally phonetic representation
-
   const playSound = async (e: React.MouseEvent) => {
       e.stopPropagation();
       if (isPlaying) return;
@@ -34,62 +30,25 @@ const SoundTile: React.FC<SoundTileProps> = ({ grapheme, phoneme, color = 'bg-bl
       }
   };
 
-  const handleMicClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!isListening && !isLoading) {
-          startListening();
-      }
-  };
-
   return (
-    <div
-      className={`relative group aspect-square rounded-[2rem] ${color} text-white shadow-lg shadow-blue-900/20 transition-all duration-150 flex flex-col items-center justify-center overflow-hidden cursor-pointer user-select-none`}
-      onMouseEnter={() => setShowMic(true)}
-      onMouseLeave={() => setShowMic(false)}
+    <button
       onClick={playSound}
+      className={`
+        relative w-16 h-16 sm:w-20 sm:h-20 rounded-full ${color} text-white 
+        shadow-lg flex flex-col items-center justify-center transition-all 
+        hover:scale-110 active:scale-95 border-b-4 border-black/10
+        ${isPlaying ? 'ring-4 ring-white shadow-xl rotate-3' : ''}
+      `}
     >
-      <div className={`absolute inset-0 bg-white/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform duration-500`} />
+      <span className="text-2xl sm:text-3xl font-black font-outfit leading-none mb-0.5">{grapheme}</span>
+      <span className="text-[8px] font-bold opacity-70 uppercase tracking-tighter">{phoneme}</span>
       
-      {/* Pulse Effect */}
       {isPlaying && (
-        <span className="absolute inset-0 rounded-[2rem] border-4 border-white/50 animate-ping" />
+        <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 text-slate-800 shadow-sm animate-bounce">
+            <Volume2 size={12} />
+        </div>
       )}
-
-      {/* Mic/Feedback Overlay */}
-      <div className={`absolute top-2 right-2 z-20 transition-all duration-300 ${showMic || isListening || isLoading || score > 0 ? 'opacity-100' : 'opacity-0'}`}>
-         <button 
-            onClick={handleMicClick}
-            className={`p-2 rounded-full backdrop-blur-md transition-colors ${
-                isListening ? 'bg-red-500/80 text-white animate-pulse' :
-                isLoading ? 'bg-yellow-500/80 text-white' :
-                score > 70 ? 'bg-green-500/80 text-white' : 
-                'bg-white/20 text-white hover:bg-white/30'
-            }`}
-         >
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : 
-             score > 70 ? <CheckCircle size={16} /> :
-             score > 0 && score <= 70 ? <XCircle size={16} /> :
-             <Mic size={16} />
-            }
-         </button>
-      </div>
-      
-      {/* Transcript Feedback (Temporary) */}
-      {(score > 0 || transcript) && (
-          <div className="absolute bottom-2 left-0 right-0 text-center">
-             <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${score > 70 ? 'bg-green-500/40' : 'bg-red-500/40'}`}>
-                {transcript || (score > 70 ? 'Good!' : 'Retry')}
-             </span>
-          </div>
-      )}
-
-      <span className="relative z-10 text-4xl sm:text-5xl font-bold font-lexend mb-2 pointer-events-none">{grapheme}</span>
-      <span className="relative z-10 text-xs sm:text-sm font-medium opacity-80 uppercase tracking-widest pointer-events-none">{phoneme}</span>
-      
-      <div className={`absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity ${isPlaying ? 'opacity-100' : ''}`}>
-        <Volume2 size={20} className="text-white/80" />
-      </div>
-    </div>
+    </button>
   );
 };
 

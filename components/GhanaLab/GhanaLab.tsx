@@ -55,10 +55,10 @@ const GhanaLab: React.FC = () => {
         <button
           key={cat.id}
           onClick={() => { setActiveCategory(cat.id); setActiveDrillIndex(0); }}
-          className="flex flex-col items-start p-6 bg-white dark:bg-slate-900 rounded-2xl border-2 border-slate-100 dark:border-slate-800 shadow-sm hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md transition-all text-left group"
+          className="flex flex-col items-start p-6 bg-white rounded-2xl border border-[#022d62]/10 shadow-sm hover:border-[#fb9610] hover:shadow-md transition-all text-left group"
         >
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{cat.title}</h3>
-          <p className="text-slate-500 dark:text-slate-400">{cat.desc}</p>
+          <h3 className="text-xl font-black text-[#022d62] mb-1 group-hover:text-[#fb9610] transition-colors">{cat.title}</h3>
+          <p className="text-[#022d62]/60 font-medium">{cat.desc}</p>
         </button>
       ))}
     </div>
@@ -75,46 +75,46 @@ const GhanaLab: React.FC = () => {
         <div className="flex items-center gap-4 mb-8">
           <button 
             onClick={() => setActiveCategory(null)}
-            className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 transition-colors"
+            className="p-3 bg-[#e7effc] rounded-xl hover:bg-white transition-colors border border-[#022d62]/10"
           >
-            <ArrowLeft size={24} className="text-slate-600 dark:text-slate-300" />
+            <ArrowLeft size={24} className="text-[#022d62]" />
           </button>
           
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{CATEGORIES.find(c => c.id === activeCategory)?.title}</h2>
-            <p className="text-slate-500">Pair {activeDrillIndex + 1} of {drills.length}</p>
+            <h2 className="text-2xl font-black text-[#022d62]">{CATEGORIES.find(c => c.id === activeCategory)?.title}</h2>
+            <p className="text-[#022d62]/40 font-bold uppercase tracking-widest text-xs">Pair {activeDrillIndex + 1} of {drills.length}</p>
           </div>
         </div>
 
         {/* Minimal Pair Cards */}
         <div className="grid grid-cols-2 gap-4 sm:gap-8 mb-8">
-            {/* Left Card */}
+            {/* Left Card - Navy */}
             <button 
                 onClick={() => handlePlay(drill.pair1.word)}
-                className="aspect-square bg-blue-50 dark:bg-blue-900/20 rounded-[2rem] border-2 border-blue-100 dark:border-blue-800 flex flex-col items-center justify-center p-4 hover:scale-105 transition-transform active:scale-95"
+                className="aspect-square bg-[#022d62] rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center p-4 hover:scale-105 transition-transform active:scale-95 group"
             >
-                <Volume2 size={32} className="text-blue-400 mb-4 opacity-50" />
-                <span className="text-3xl sm:text-4xl font-bold text-blue-900 dark:text-blue-100 font-lexend capitalize">{drill.pair1.word}</span>
+                <Volume2 size={32} className="text-white opacity-40 mb-4 group-active:opacity-100" />
+                <span className="text-3xl sm:text-4xl font-black text-white font-lexend capitalize tracking-wide">{drill.pair1.word}</span>
             </button>
 
-            {/* Right Card */}
+            {/* Right Card - Orange */}
             <button 
                 onClick={() => handlePlay(drill.pair2.word)}
-                className="aspect-square bg-indigo-50 dark:bg-indigo-900/20 rounded-[2rem] border-2 border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center p-4 hover:scale-105 transition-transform active:scale-95"
+                className="aspect-square bg-[#fb9610] rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center p-4 hover:scale-105 transition-transform active:scale-95 group"
             >
-                <Volume2 size={32} className="text-indigo-400 mb-4 opacity-50" />
-                <span className="text-3xl sm:text-4xl font-bold text-indigo-900 dark:text-indigo-100 font-lexend capitalize">{drill.pair2.word}</span>
+                <Volume2 size={32} className="text-white opacity-40 mb-4 group-active:opacity-100" />
+                <span className="text-3xl sm:text-4xl font-black text-white font-lexend capitalize tracking-wide">{drill.pair2.word}</span>
             </button>
         </div>
 
         {/* Tip / Visual Cue */}
-        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 rounded-2xl p-6 flex gap-4 items-start mb-8">
-            <div className="bg-orange-100 dark:bg-orange-800 rounded-full p-2 mt-1">
-                <Info size={20} className="text-orange-600 dark:text-orange-200" />
+        <div className="bg-[#e7effc] border border-[#022d62]/10 rounded-2xl p-6 flex gap-4 items-start mb-8">
+            <div className="bg-white rounded-full p-2 mt-1 shadow-sm">
+                <Info size={20} className="text-[#fb9610]" />
             </div>
             <div>
-                <h4 className="font-bold text-orange-900 dark:text-orange-100 mb-1">Mouth Position Tip</h4>
-                <p className="text-orange-800 dark:text-orange-200/80 leading-relaxed">{drill.tip}</p>
+                <h4 className="font-black text-[#022d62] mb-1">Mouth Position Tip</h4>
+                <p className="text-[#022d62]/70 font-medium leading-relaxed">{drill.tip}</p>
             </div>
         </div>
 
@@ -123,14 +123,14 @@ const GhanaLab: React.FC = () => {
              <button
                 disabled={activeDrillIndex === 0}
                 onClick={() => setActiveDrillIndex(cur => cur - 1)}
-                className="flex-1 py-4 rounded-xl font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="flex-1 py-4 rounded-xl font-black bg-[#e7effc] text-[#022d62] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition-all shadow-sm"
              >
                 Previous Pair
              </button>
              <button
                 disabled={activeDrillIndex === drills.length - 1}
                 onClick={() => setActiveDrillIndex(cur => cur + 1)}
-                className="flex-1 py-4 rounded-xl font-bold bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 dark:shadow-blue-900/20"
+                className="flex-1 py-4 rounded-xl font-black bg-[#022d62] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 transition-all shadow-lg"
              >
                 Next Pair
              </button>
@@ -143,9 +143,9 @@ const GhanaLab: React.FC = () => {
     <div>
       {!activeCategory ? (
         <div className="animate-fade-in-up">
-            <div className="prose dark:prose-invert max-w-none mb-8 text-center">
-                 <h3 className="text-2xl font-bold text-slate-800 dark:text-white">Ghana Lab</h3>
-                 <p className="text-slate-500">Master common tricky sounds. Select a challenge to begin.</p>
+            <div className="max-w-none mb-8 text-center">
+                 <h3 className="text-3xl font-black text-[#022d62] mb-2 font-outfit">Ghana Lab</h3>
+                 <p className="text-[#022d62]/50 font-medium font-lexend">Master common tricky sounds. Select a challenge to begin.</p>
             </div>
             {renderMenu()}
         </div>
