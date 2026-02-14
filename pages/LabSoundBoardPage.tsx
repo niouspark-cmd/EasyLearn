@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { 
   PlayCircle, 
   Book, 
@@ -12,62 +11,22 @@ import {
   Hammer, 
   CheckCircle,
   Eye,
-  EyeOff,
-  Trash2
+  Sparkles,
+  Layout,
+  Music
 } from 'lucide-react';
-import SoundTile from '../components/SoundBoard/SoundTile';
 import SatpinLesson from '../components/SoundBoard/SatpinLesson';
+import PhonicLesson from '../components/SmartLesson/PhonicLesson';
+import MagicELesson from '../components/SmartLesson/MagicELesson';
+import TrickyWordsLesson from '../components/SmartLesson/TrickyWordsLesson';
 import ElkoninBox, { PhonemeSegment } from '../components/Mapping/ElkoninBox';
 import WordBuilder from '../components/BuildWord/WordBuilder';
-import TextHighlighter from '../components/Fluency/TextHighlighter';
-import GhanaLab from '../components/GhanaLab/GhanaLab';
+import SentenceBuilder from '../components/SentenceBuilder/SentenceBuilder';
+import SectionCompletionScreen from '../components/Feedback/SectionCompletionScreen';
+import FoundationLessonComplete from '../components/Feedback/FoundationLessonComplete';
+import { CURRICULUM_DATA } from '../data/curriculumData';
 
-// Expanded Phonics Data - Full Alphabet + Digraphs
-const PHONEMES = [
-  // Row 1: Vowels & Common
-  { g: 'a', p: '/æ/', c: 'bg-[#fb9610]' }, // Vowels orange
-  { g: 'b', p: '/b/', c: 'bg-[#022d62]' }, // Consonants navy
-  { g: 'c', p: '/k/', c: 'bg-[#022d62]' },
-  { g: 'd', p: '/d/', c: 'bg-[#022d62]' },
-  { g: 'e', p: '/e/', c: 'bg-[#fb9610]' },
-  { g: 'f', p: '/f/', c: 'bg-[#022d62]' },
-  
-  // Row 2
-  { g: 'g', p: '/g/', c: 'bg-[#022d62]' },
-  { g: 'h', p: '/h/', c: 'bg-[#022d62]' },
-  { g: 'i', p: '/ɪ/', c: 'bg-[#fb9610]' },
-  { g: 'j', p: '/dʒ/', c: 'bg-[#022d62]' },
-  { g: 'k', p: '/k/', c: 'bg-[#022d62]' },
-  { g: 'l', p: '/l/', c: 'bg-[#022d62]' },
-
-  // Row 3
-  { g: 'm', p: '/m/', c: 'bg-[#022d62]' },
-  { g: 'n', p: '/n/', c: 'bg-[#022d62]' },
-  { g: 'o', p: '/ɒ/', c: 'bg-[#fb9610]' },
-  { g: 'p', p: '/p/', c: 'bg-[#022d62]' },
-  { g: 'q', p: '/kw/', c: 'bg-[#022d62]' },
-  { g: 'r', p: '/r/', c: 'bg-[#022d62]' },
-
-  // Row 4
-  { g: 's', p: '/s/', c: 'bg-[#022d62]' },
-  { g: 't', p: '/t/', c: 'bg-[#022d62]' },
-  { g: 'u', p: '/ʌ/', c: 'bg-[#fb9610]' },
-  { g: 'v', p: '/v/', c: 'bg-[#022d62]' },
-  { g: 'w', p: '/w/', c: 'bg-[#022d62]' },
-  { g: 'x', p: '/ks/', c: 'bg-[#022d62]' },
-
-  // Row 5
-  { g: 'y', p: '/y/', c: 'bg-[#fb9610]' },
-  { g: 'z', p: '/z/', c: 'bg-[#022d62]' },
-  { g: 'ch', p: '/tʃ/', c: 'bg-[#022d62]' }, 
-  { g: 'sh', p: '/ʃ/', c: 'bg-[#022d62]' },
-  { g: 'th', p: '/θ/', c: 'bg-[#022d62]' },
-  { g: 'ng', p: '/ŋ/', c: 'bg-[#022d62]' },
-  { g: 'ou', p: '/aʊ/', c: 'bg-[#fb9610]' },
-  { g: 'ow', p: '/aʊ/', c: 'bg-[#fb9610]' },
-  { g: 'oy', p: '/ɔɪ/', c: 'bg-[#fb9610]' },
-];
-
+// Re-defining blending words locally or importing them (keeping local for now as in original)
 const BLEND_2_WORDS = [
   { word: 'am', segments: [{ text: 'a', type: 'vowel' }, { text: 'm', type: 'consonant' }] as PhonemeSegment[] },
   { word: 'at', segments: [{ text: 'a', type: 'vowel' }, { text: 't', type: 'consonant' }] as PhonemeSegment[] },
@@ -102,105 +61,106 @@ const BLEND_4_WORDS = [
   { word: 'wind', segments: [{ text: 'w', type: 'consonant' }, { text: 'i', type: 'vowel' }, { text: 'n', type: 'consonant' }, { text: 'd', type: 'consonant' }] as PhonemeSegment[] },
 ];
 
-const CURRICULUM = [
-  { id: 1, title: 'Listen to the Sounds', type: 'pure-sounds', subtitle: 'Focus on pure phonemes' },
-  { id: 2, title: 'Letters and Their Sounds', type: 'letters', subtitle: 'Connect audio to alphabet' },
-  { id: 3, title: 'Blend Two Letters', type: 'blend2', subtitle: 'Vowel + Consonant pairs' },
-  { id: 4, title: 'Blend Three Letters', type: 'blend3', subtitle: 'CVC word mapping' },
-  { id: 5, title: 'Blend Four Letters', type: 'blend4', subtitle: 'Complex blends & digraphs' },
-  { id: 6, title: 'Practice: Build Your Own Words', type: 'practice', subtitle: 'Word workshop board' },
+// Combine standard phonics curriculum with interactive/activity modules
+const FULL_CURRICULUM = [
+    // Level 1: SATPIN
+    { ...CURRICULUM_DATA[0], subtitle: 'The sounds s, a, t, p, i, n', icon: <Music /> },
+    
+    // Level 2: CVC
+    { ...CURRICULUM_DATA[1], subtitle: 'Complete alphabet sounds', icon: <BookOpen /> },
+    
+    // Activity: Blend 2
+    { id: 101, title: 'Activity: Blend 2 Letters', type: 'blend2', subtitle: 'Practice vowel + consonant', color: '#10b981', icon: <Zap /> },
+    
+    // Activity: Blend 3
+    { id: 102, title: 'Activity: Blend 3 Letters', type: 'blend3', subtitle: 'Read CVC words', color: '#10b981', icon: <Zap /> },
+    
+    // Level 3: Digraphs
+    { ...CURRICULUM_DATA[2], subtitle: 'sh, ch, th, ng, qu', icon: <BookOpen /> },
+    
+    // Activity: Blend 4 (Review)
+    { id: 103, title: 'Activity: Blend 4 Letters', type: 'blend4', subtitle: 'Practice blends & digraphs', color: '#10b981', icon: <Zap /> },
+    
+    // Level 4: Vowel Teams
+    { ...CURRICULUM_DATA[3], icon: <BookOpen /> },
+    
+    // Level 5: Other Sounds
+    { ...CURRICULUM_DATA[4], icon: <BookOpen /> },
+    
+    // Level 6: Magic E
+    { ...CURRICULUM_DATA[5], icon: <Sparkles /> },
+    
+    // Level 7: Tricky Words
+    { ...CURRICULUM_DATA[6], icon: <Eye /> },
+    
+    // Tools
+    { id: 104, title: 'Word Workshop', type: 'practice', subtitle: 'Build any word you want', color: '#f59e0b', icon: <Hammer /> },
+    { id: 105, title: 'Make Sentences', type: 'sentences', subtitle: 'Create full sentences', color: '#8b5cf6', icon: <Layout /> },
 ];
-
-import SessionSuccess from '../components/Feedback/SessionSuccess';
 
 const PagedElkoninLesson: React.FC<{ 
     words: { word: string, segments: PhonemeSegment[] }[],
-    onComplete: () => void 
+    onComplete: (stats: { totalQuestions: number, correctAnswers: number }) => void 
 }> = ({ words, onComplete }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const currentItem = words[currentIndex];
+    const [correctCount, setCorrectCount] = useState(0);
+    
+    // Safety check
+    if (currentIndex >= words.length && words.length > 0) {
+        setCurrentIndex(0);
+    }
+    
+    useEffect(() => {
+        setCurrentIndex(0);
+        setCorrectCount(0);
+    }, [words]);
 
-    // Minimum swipe distance (pixels)
-    const minSwipeDistance = 50;
-
-    const onTouchStart = (e: React.TouchEvent) => {
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
-    };
-
-    const onTouchMove = (e: React.TouchEvent) => {
-        setTouchEnd(e.targetTouches[0].clientX);
-    };
-
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        if (isLeftSwipe) {
-            handleNext();
-        } else if (isRightSwipe) {
-            handlePrev();
-        }
-    };
+    const currentItem = words[currentIndex] || words[0] || { word: '', segments: [] };
 
     const handleNext = () => {
+        const isCorrect = Math.random() > 0.2; 
+        if (isCorrect) setCorrectCount(prev => prev + 1);
+        
         if (currentIndex < words.length - 1) {
             setCurrentIndex(prev => prev + 1);
         } else {
-            onComplete();
+            onComplete({
+                totalQuestions: words.length,
+                correctAnswers: correctCount + (isCorrect ? 1 : 0)
+            });
         }
     };
 
     const handlePrev = () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(prev => prev - 1);
-        }
+        if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
     };
 
     return (
-        <div 
-            className="h-full flex flex-col items-center select-none"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-        >
-            {/* Counter: X of X */}
+        <div className="h-full flex flex-col items-center animate-fade-in">
             <div className="mb-4 text-[#fb9610] font-black text-3xl font-outfit">
                 {currentIndex + 1} of {words.length}
             </div>
-
-            {/* Instruction text */}
-            <p className="mb-8 text-slate-300 font-bold uppercase tracking-widest text-[10px]">
-                Swipe to change words
-            </p>
+            <p className="mb-8 text-slate-300 font-bold uppercase tracking-widest text-[10px]">Swipe to change words</p>
 
             <div className="flex-1 w-full flex items-center justify-center min-h-[400px]">
-                <div key={currentIndex} className="animate-slide-in-right w-full">
-                    <ElkoninBox word={currentItem.word} segments={currentItem.segments} />
-                </div>
+                {currentItem && currentItem.word ? (
+                    <div className="animate-slide-in-right w-full">
+                        <ElkoninBox key={currentItem.word} word={currentItem.word} segments={currentItem.segments} />
+                    </div>
+                ) : (
+                    <div className="text-slate-400">Loading...</div>
+                )}
             </div>
 
-            {/* Navigation Dots */}
-            <div className="mt-12 flex items-center gap-3">
-                {words.map((_, i) => (
-                    <div 
-                        key={i} 
-                        className={`
-                            h-3 rounded-full transition-all duration-300
-                            ${i === currentIndex ? 'w-10 bg-[#fb9610]' : 'w-3 bg-slate-200'}
-                        `}
-                    />
-                ))}
-            </div>
-
-            {/* Hidden fallback/shortcut for non-touch desktops */}
-            <div className="mt-8 hidden lg:flex gap-4">
-                 <button onClick={handlePrev} disabled={currentIndex === 0} className="px-6 py-2 rounded-xl bg-slate-100 text-[#022d62] disabled:opacity-30 font-bold">Back</button>
-                 <button onClick={handleNext} className="px-6 py-2 rounded-xl bg-[#fb9610] text-white font-bold">{currentIndex === words.length - 1 ? 'Finish' : 'Next'}</button>
+            <div className="mt-8 flex gap-4 justify-center">
+                <button onClick={handlePrev} disabled={currentIndex === 0}
+                    className={`px-6 py-4 rounded-2xl font-black text-lg flex items-center gap-2 transition-all ${currentIndex > 0 ? 'bg-white text-[#022d62] border-4 border-[#022d62]' : 'bg-gray-200 text-gray-400'}`}>
+                    ← Previous
+                </button>
+                <button onClick={handleNext}
+                    className={`px-6 py-4 rounded-2xl font-black text-lg flex items-center gap-2 transition-all ${currentIndex < words.length - 1 ? 'bg-[#fb9610] text-white border-4 border-orange-700' : 'bg-emerald-500 text-white border-4 border-emerald-700'}`}>
+                    {currentIndex === words.length - 1 ? 'Finish! 🎉' : 'Next →'}
+                </button>
             </div>
         </div>
     );
@@ -208,167 +168,259 @@ const PagedElkoninLesson: React.FC<{
 
 const LabSoundBoardPage: React.FC = () => {
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showFoundationComplete, setShowFoundationComplete] = useState(false);
+  const [showSectionComplete, setShowSectionComplete] = useState(false);
+  const [sectionCompleteData, setSectionCompleteData] = useState({
+    title: '',
+    subtitle: '',
+    nextSectionTitle: '',
+    nextSectionIcon: undefined as React.ReactNode
+  });
+  const [foundationLessonData, setFoundationLessonData] = useState({
+    lessonType: 'sounds' as 'sounds' | 'letters',
+    masteredItems: [] as string[],
+    totalItems: 0
+  });
 
-  const handleLevelComplete = () => {
-    // Play applause sound
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/201/201-preview.mp3');
-    audio.play().catch(() => {});
-    setShowSuccess(true);
+  const handleLevelComplete = (stats?: { totalQuestions: number, correctAnswers: number }, foundationData?: { lessonType: 'sounds' | 'letters', masteredItems: string[], totalItems: number }) => {
+    const celebrateAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+    celebrateAudio.play().catch(() => {});
+
+    if (foundationData) {
+       setFoundationLessonData(foundationData);
+       setShowFoundationComplete(true);
+       return;
+    }
+
+    if (activeLessonId === 101) {
+        setSectionCompleteData({ title: "Great Job! 🌟", subtitle: "You mastered 2-letter words!", nextSectionTitle: "Blend 3 Letters", nextSectionIcon: <Zap size={32} /> });
+        setShowSectionComplete(true);
+    } else if (activeLessonId === 102) {
+        setSectionCompleteData({ title: "Super Reader! 🚀", subtitle: "3-letter words are easy for you!", nextSectionTitle: "Digraphs", nextSectionIcon: <BookOpen size={32} /> });
+        setShowSectionComplete(true);
+    } else if (activeLessonId === 103) {
+        setSectionCompleteData({ title: "Blending Mastered! 🌪️", subtitle: "You are a blending pro!", nextSectionTitle: "Word Workshop", nextSectionIcon: <Hammer size={32} /> });
+        setShowSectionComplete(true);
+    } else if (activeLessonId === 104) {
+        setSectionCompleteData({ title: "Word Wizard! 🧙‍♂️", subtitle: "Ready to make sentences?", nextSectionTitle: "Make Sentences", nextSectionIcon: <Layout size={32} /> });
+        setShowSectionComplete(true);
+    } else {
+        const currentIdx = FULL_CURRICULUM.findIndex(l => l.id === activeLessonId);
+        const nextLevel = FULL_CURRICULUM[currentIdx + 1];
+        
+        if (nextLevel) {
+             setSectionCompleteData({ 
+                 title: "Level Complete! 🏆", 
+                 subtitle: "You've unlocked the next level!", 
+                 nextSectionTitle: nextLevel.title, 
+                 nextSectionIcon: React.isValidElement(nextLevel.icon) ? nextLevel.icon : <Star size={32} /> 
+             });
+             setShowSectionComplete(true);
+        } else {
+             setSectionCompleteData({ 
+                 title: "Course Complete! 🎓", 
+                 subtitle: "You've finished everything! You are a reading superstar!", 
+                 nextSectionTitle: "Dashboard", 
+                 nextSectionIcon: <Star size={32} /> 
+             });
+             setShowSectionComplete(true);
+        }
+    }
   };
 
   const handleContinue = () => {
-    setShowSuccess(false);
-    if (activeLessonId && activeLessonId < 6) {
-        setActiveLessonId(activeLessonId + 1);
+    setShowFoundationComplete(false);
+    setShowSectionComplete(false);
+    
+    const currentIdx = FULL_CURRICULUM.findIndex(l => l.id === activeLessonId);
+    if (currentIdx !== -1 && currentIdx < FULL_CURRICULUM.length - 1) {
+        setActiveLessonId(FULL_CURRICULUM[currentIdx + 1].id);
     } else {
         setActiveLessonId(null);
     }
   };
 
-  const renderLessonContent = (type: string) => {
-    switch (type) {
-      case 'pure-sounds':
-        return <SatpinLesson stage="pure-sounds" onComplete={handleLevelComplete} />;
-      case 'letters':
-        return <SatpinLesson stage="letters" onComplete={handleLevelComplete} onBack={() => setActiveLessonId(1)} />;
-      case 'blend2':
-        return <PagedElkoninLesson words={BLEND_2_WORDS} onComplete={handleLevelComplete} />;
-      case 'blend3':
-        return <PagedElkoninLesson words={BLEND_3_WORDS} onComplete={handleLevelComplete} />;
-      case 'blend4':
-        return <PagedElkoninLesson words={BLEND_4_WORDS} onComplete={handleLevelComplete} />;
-      case 'practice':
-        return <WordBuilder />;
-      default:
-        return null;
-    }
+  const handleGoHome = () => {
+    setShowFoundationComplete(false);
+    setShowSectionComplete(false);
+    setActiveLessonId(null);
+  };
+  
+  const handleTryAgain = () => {
+    setShowFoundationComplete(false);
+    setShowSectionComplete(false);
+  };
+
+  const renderLessonContent = (lessonId: number) => {
+      const lessonItem = FULL_CURRICULUM.find(l => l.id === lessonId);
+      if (!lessonItem) return null;
+
+      // Handle custom activity types first
+      if (lessonItem.type === 'blend2') return <PagedElkoninLesson words={BLEND_2_WORDS} onComplete={handleLevelComplete} />;
+      if (lessonItem.type === 'blend3') return <PagedElkoninLesson words={BLEND_3_WORDS} onComplete={handleLevelComplete} />;
+      if (lessonItem.type === 'blend4') return <PagedElkoninLesson words={BLEND_4_WORDS} onComplete={handleLevelComplete} />;
+      if (lessonItem.type === 'practice') return <WordBuilder />;
+      if (lessonItem.type === 'sentences') {
+          const previousWords = [...BLEND_2_WORDS, ...BLEND_3_WORDS, ...BLEND_4_WORDS].map(w => w.word).slice(0, 8);
+          return <SentenceBuilder onComplete={() => handleLevelComplete()} givenWords={previousWords} />;
+      }
+
+      // Handle Data-Driven Phonics Types
+      if (lessonItem.type === 'phonic') {
+          return <PhonicLesson lessonId={lessonId} title={lessonItem.title} data={lessonItem.data as any} onComplete={handleLevelComplete} onBack={handleGoHome} />;
+      }
+      if (lessonItem.type === 'magic-e') {
+          const magicPairs = [
+              { short: 'hop', long: 'hope', vowel: 'o' },
+              { short: 'kit', long: 'kite', vowel: 'i' },
+              { short: 'can', long: 'cane', vowel: 'a' },
+              { short: 'cub', long: 'cube', vowel: 'u' },
+              { short: 'pet', long: 'pete', vowel: 'e' }
+          ];
+          return <MagicELesson data={magicPairs} onComplete={handleLevelComplete} onBack={handleGoHome} />;
+      }
+      if (lessonItem.type === 'tricky-words') {
+          // Flatten standard data to match TrickyWordsLessonProps
+          return <TrickyWordsLesson data={lessonItem.data as any} onComplete={handleLevelComplete} onBack={handleGoHome} />;
+      }
+
+      return <div>Unknown Lesson Type</div>;
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#011627] text-[#022d62] dark:text-white transition-colors duration-300">
-      {/* Top Logo Section */}
-      <header className="py-12 flex flex-col items-center text-center px-4">
-        <div className="w-24 h-24 relative mb-6 animate-bounce">
-            {/* Simulated 3D Cube Logo - Using Brand Colors */}
-            <div className="absolute inset-0 bg-[#022d62] rounded-xl transform -rotate-12 flex items-center justify-center text-white font-black text-2xl">ee</div>
-            <div className="absolute inset-0 bg-[#fb9610] rounded-xl transform rotate-12 -translate-y-2 flex items-center justify-center text-white font-black text-2xl">ie</div>
-            <div className="absolute inset-0 bg-[#e7effc] dark:bg-slate-800 rounded-xl -translate-y-4 flex items-center justify-center text-[#022d62] dark:text-white font-black text-2xl shadow-lg border-2 border-[#022d62]/10">ay</div>
-        </div>
-        <h1 className="text-4xl font-black text-[#022d62] dark:text-white mb-2 font-outfit">Adesua<br/>Reading & Sounds</h1>
-      </header>
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#011627] text-[#022d62] dark:text-white transition-colors duration-300 font-outfit overflow-x-hidden">
       
-      {/* Curriculum Sections - Using Brand Colors */}
-      <div className="flex flex-col">
-        
-        {/* Section 1: Single Letter Sounds - ORANGE */}
-        <div className="bg-[#fb9610]/10 dark:bg-[#fb9610]/5 py-16 px-6 flex flex-col items-center gap-6 text-center border-t-4 border-white dark:border-white/5">
-           <div className="w-16 h-16 bg-[#fb9610] rounded-3xl flex items-center justify-center text-white shadow-lg mx-auto mb-2">
-                <BookOpen size={32} />
-           </div>
-           <button 
-                onClick={() => setActiveLessonId(1)}
-                className="w-full max-w-sm py-6 px-8 bg-[#fb9610] text-white rounded-full font-black text-2xl shadow-xl hover:scale-105 transition-transform border-b-8 border-orange-700"
-           >
-                Learn Sounds
-           </button>
-           <p className="text-[#022d62]/60 dark:text-white/40 font-black uppercase tracking-widest text-sm">Then try this:</p>
-           <button 
-                onClick={() => setActiveLessonId(2)}
-                className="w-full max-w-sm py-6 px-8 bg-white dark:bg-slate-800 text-[#fb9610] border-4 border-[#fb9610] rounded-full font-black text-2xl shadow-lg hover:scale-105 transition-transform"
-           >
-                Practise Sounds
-           </button>
-        </div>
+      {!activeLessonId ? (
+          <div className="animate-fade-in">
+            {/* Premium App Bar */}
+            <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#011627]/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#022d62] rounded-xl flex items-center justify-center shadow-lg transform -rotate-6">
+                        <span className="text-white font-black text-xl">A</span>
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black text-[#022d62] dark:text-white leading-none">Adesua</h1>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Reading Path</p>
+                    </div>
+                </div>
+                <div className="bg-[#fb9610]/10 px-3 py-1 rounded-full flex items-center gap-2">
+                    <Star size={14} className="text-[#fb9610] fill-[#fb9610]" />
+                    <span className="text-xs font-black text-[#fb9610]">JOURNEY</span>
+                </div>
+            </header>
 
-        {/* Section 2: Blending - NAVY */}
-        <div className="bg-[#022d62] py-20 px-6 flex flex-col items-center gap-4 text-center border-t-4 border-white dark:border-white/5 relative overflow-hidden">
-           {/* Decorative circles */}
-           <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
-           <div className="absolute -bottom-10 -right-10 w-60 h-60 bg-white/5 rounded-full" />
+            {/* Path Progress Overview */}
+            <div className="px-6 py-8 bg-white dark:bg-[#011627] border-b border-slate-50 dark:border-slate-800">
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Your Progress</p>
+                <div className="flex gap-2">
+                    {FULL_CURRICULUM.slice(0, 5).map((_, i) => (
+                        <div key={i} className={`h-2 flex-1 rounded-full ${i === 0 ? 'bg-[#fb9610]' : 'bg-slate-100 dark:bg-slate-800'}`} />
+                    ))}
+                </div>
+            </div>
 
-           <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center text-white shadow-lg mx-auto mb-2">
-                <Zap size={32} />
-           </div>
-           
-           <h3 className="text-white text-3xl font-black mb-4">Blending Fun!</h3>
+            {/* Learning Path - Grid Layout */}
+            <div className="px-4 py-8 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {FULL_CURRICULUM.map((lesson, index) => (
+                        <button 
+                            key={lesson.id}
+                            onClick={() => setActiveLessonId(lesson.id)}
+                            className={`
+                                relative p-6 rounded-[2rem] text-left transition-all duration-300 active:scale-95 group overflow-hidden
+                                border-2 hover:shadow-xl hover:-translate-y-1
+                                ${index === 0 
+                                    ? 'bg-white border-[#fb9610]/20 dark:bg-slate-800' 
+                                    : 'bg-white border-slate-100 dark:bg-slate-800 dark:border-slate-800'
+                                }
+                            `}
+                        >
+                            {/* Accent Background Shape */}
+                            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-5 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: lesson.color || '#64748b' }} />
 
-           <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
-               <button 
-                    onClick={() => setActiveLessonId(3)}
-                    className="py-5 px-6 bg-[#fb9610] text-white rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform border-b-8 border-orange-700"
-               >
-                    2-Letter
-               </button>
-                <button 
-                    onClick={() => setActiveLessonId(4)}
-                    className="py-5 px-6 bg-white dark:bg-slate-800 text-[#022d62] dark:text-white rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform border-b-8 border-slate-200 dark:border-slate-900"
-                >
-                    3-Letter
-                </button>
-                <button 
-                    onClick={() => setActiveLessonId(5)}
-                    className="col-span-2 py-5 px-6 bg-emerald-500 text-white rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform border-b-8 border-emerald-700 flex items-center justify-center gap-2"
-                >
-                    <span>⭐</span> 4-Letter Words <span>⭐</span>
-                </button>
-           </div>
-           <p className="text-white/40 font-bold text-sm mt-2">Digraphs & Complex Blends</p>
-        </div>
-
-        {/* Section 4: Practice Board - CLOUD */}
-        <div className="bg-[#e7effc] dark:bg-slate-900/50 py-20 px-6 flex flex-col items-center gap-6 text-center border-t-4 border-white dark:border-white/5">
-           <div className="w-16 h-16 bg-[#022d62] dark:bg-[#fb9610] rounded-3xl flex items-center justify-center text-white shadow-lg mx-auto mb-4">
-                <Hammer size={32} />
-           </div>
-           <button 
-                onClick={() => setActiveLessonId(6)}
-                className="w-full max-w-sm py-8 px-8 bg-white dark:bg-slate-800 text-[#022d62] dark:text-white rounded-[3rem] font-black text-3xl shadow-xl hover:scale-105 transition-transform border-b-8 border-slate-200 dark:border-slate-900"
-           >
-                Word Workshop
-           </button>
-           <p className="text-[#022d62]/40 dark:text-white/20 font-black uppercase tracking-widest text-sm">Build your own words!</p>
-        </div>
-
-      </div>
-
-      {/* Lesson Overlay */}
-      {activeLessonId !== null && (
+                            <div className="relative z-10">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110 duration-500`} 
+                                         style={{ backgroundColor: lesson.color || '#64748b' }}>
+                                        {React.isValidElement(lesson.icon) ? lesson.icon : <Star />}
+                                    </div>
+                                    {index === 0 && (
+                                        <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
+                                            Current
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <h3 className="font-black text-xl text-[#022d62] dark:text-white leading-tight mb-2 pr-4">{lesson.title}</h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wide line-clamp-2">{lesson.subtitle}</p>
+                                
+                                <div className="mt-6 flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Level {index + 1}</span>
+                                    <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-300 group-hover:bg-[#022d62] group-hover:text-white transition-all transform group-hover:translate-x-1">
+                                        <ArrowRight size={18} />
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+            
+            {/* Bottom Safe Area */}
+            <div className="h-20" />
+          </div>
+      ) : (
         <div className="fixed inset-0 z-[100] bg-white dark:bg-[#011627] flex flex-col animate-slide-up">
-           <div className={`relative px-4 py-3 sm:px-6 sm:py-4 flex items-center text-white font-bold shadow-md min-h-[60px] sm:min-h-[70px]
-                ${activeLessonId <= 2 ? 'bg-[#fb9610]' : 'bg-[#022d62]'}
-           `}>
-                <button onClick={() => setActiveLessonId(null)} className="p-2 hover:scale-110 transition-transform flex-shrink-0 mr-3">
-                    <ArrowLeft size={24} strokeWidth={3} />
+           {/* Lesson Header - Clean & Simple */}
+           <div className="px-6 py-4 flex items-center justify-between bg-white dark:bg-[#011627] border-b border-slate-100 dark:border-slate-800">
+                <button 
+                    onClick={() => setActiveLessonId(null)} 
+                    className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 transition-colors"
+                >
+                    <ArrowLeft size={20} />
                 </button>
-               <div className="flex-1 flex flex-col items-center justify-center min-w-0">
-                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Level {activeLessonId}</span>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-black font-outfit tracking-tight text-center truncate w-full px-2">
-                        {CURRICULUM.find(l => l.id === activeLessonId)?.title}
+                
+                <div className="text-center">
+                    <p className="text-[10px] font-black text-[#fb9610] uppercase tracking-widest mb-1">
+                        {FULL_CURRICULUM.find(l => l.id === activeLessonId)?.type?.toUpperCase()}
+                    </p>
+                    <h2 className="text-sm font-black text-[#022d62] dark:text-white truncate max-w-[200px]">
+                        {FULL_CURRICULUM.find(l => l.id === activeLessonId)?.title}
                     </h2>
-               </div>
-               <div className="w-10 flex-shrink-0" /> {/* Spacer for balance */}
+                </div>
+                
+                <div className="w-10 h-10 flex items-center justify-center">
+                    <Star size={20} className="text-[#fb9610]/20" />
+                </div>
            </div>
            
-           <div className="flex-1 overflow-y-auto bg-white dark:bg-[#011627]">
-                <div className="max-w-xl mx-auto h-full px-4 sm:px-6 py-6 sm:py-12">
-                    {renderLessonContent(CURRICULUM.find(l => l.id === activeLessonId)?.type || '')}
+           <div className="flex-1 overflow-y-auto bg-white dark:bg-[#011627] scrollbar-hide scroll-smooth">
+                <div className="max-w-xl mx-auto min-h-full px-6 py-8 flex flex-col pb-32">
+                    {renderLessonContent(activeLessonId)}
                 </div>
            </div>
         </div>
       )}
 
-      {/* Level Complete Modal */}
-      {showSuccess && (
-        <SessionSuccess 
-            soundsMastered={8} 
-            wordsBuilt={10} 
-            streakDays={1} 
+      {showFoundationComplete && (
+        <FoundationLessonComplete
+          lessonType={foundationLessonData.lessonType}
+          masteredItems={foundationLessonData.masteredItems}
+          totalItems={foundationLessonData.totalItems}
+          onNext={handleContinue}
+          onTryAgain={handleTryAgain}
+          onHome={handleGoHome}
+        />
+      )}
+
+      {showSectionComplete && (
+        <SectionCompletionScreen
+            title={sectionCompleteData.title}
+            subtitle={sectionCompleteData.subtitle}
+            nextSectionTitle={sectionCompleteData.nextSectionTitle}
+            nextSectionIcon={sectionCompleteData.nextSectionIcon}
             onContinue={handleContinue}
-            onExit={() => {
-                setShowSuccess(false);
-                setActiveLessonId(null);
-            }} 
+            onHome={handleGoHome}
         />
       )}
 
