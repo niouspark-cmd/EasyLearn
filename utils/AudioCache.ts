@@ -1,5 +1,5 @@
 export class AudioCache {
-  private static CACHE_NAME = 'adesua-audio-cache-v6';
+  private static CACHE_NAME = 'adesua-offline-v1';
 
   /**
    * getAudio

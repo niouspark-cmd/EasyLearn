@@ -63,6 +63,10 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   "ou_alt": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha--ou-dotted.mp3", "example": "soup", "ipa": "/uː/" },
   "ow_long": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-3-ow-long.mp3", "example": "snow", "ipa": "/oʊ/" }, // Often synonymous with 'oa' in Level 4
   "ue": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-10-u-long.mp3", "example": "blue", "ipa": "/uː/" },
+  "ar": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-14-a-dotted.mp3", "example": "car", "ipa": "/ɑː/" },
+  "er": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "mixer", "ipa": "/ə/" },
+  "oo": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "book", "ipa": "/ʊ/" },
+  "oi": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-11-oy.mp3", "example": "coin", "ipa": "/ɔɪ/" },
 };
 
 /**

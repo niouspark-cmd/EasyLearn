@@ -2,6 +2,7 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { AudioCache } from './AudioCache';
 import { STATIC_ASSETS, getPhonemeData, PHONICS_WORDS } from './phoneticMap';
+import { LETTER_IMAGES } from './letterImages';
 import { PiperService } from './PiperService';
 
 const API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
@@ -147,6 +148,28 @@ export class ElevenLabsService {
               // Use encodeURI to handle spaces and special characters in paths
               const fullUrl = encodeURI(`/assets/audio/phonemes/${filename}${extension}`);
               urls.push(fullUrl);
+          }
+      });
+
+      // 3. Word images (PNGs)
+      PHONICS_WORDS.forEach(word => {
+          urls.push(`/assets/images/words/${word.toLowerCase()}.png`);
+      });
+
+      // 4. Curriculum sorted audio
+      const baseCurr = '/assets/audio/curriculum_sorted/';
+      const levels = [
+          'Level 1 - Golden Letters (SATPIN)',
+          'Level 2 - The Alphabet (CVC)',
+          'Level 3 - Digraphs',
+          'Level 4 - Vowel Teams',
+          'Level 5 - Other Sounds'
+      ];
+      
+      // 5. External letter images (Fallbacks)
+      Object.values(LETTER_IMAGES).forEach(item => {
+          if (item.imageUrl.startsWith('http')) {
+              urls.push(item.imageUrl);
           }
       });
 
