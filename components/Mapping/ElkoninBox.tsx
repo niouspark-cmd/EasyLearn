@@ -40,7 +40,7 @@ const ElkoninBox: React.FC<ElkoninBoxProps> = ({ word, segments, showDots = true
     for (let i = 0; i < segments.length; i++) {
         setActiveSegment(i);
         await ElevenLabsService.play(segments[i].text);
-        await new Promise(r => setTimeout(r, 400)); // Pause between sounds for blending practice
+        await new Promise(r => setTimeout(r, 1500)); // Pause between sounds for blending practice
     }
     
     // 2. Clear highlights for a tiny beat

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ElevenLabsService } from '../../utils/ElevenLabsService';
+import { getWordImage } from '../../utils/letterImages';
 
 interface MagicPair {
   short: string; // e.g. "hop"
@@ -19,9 +20,17 @@ const MagicELesson: React.FC<MagicELessonProps> = ({ data, onComplete, onBack })
   const [hasMagic, setHasMagic] = useState(false);
 
   const currentPair = data[currentIndex];
+  const currentWord = hasMagic ? currentPair.long : currentPair.short;
+  
+  // Get image for the CURRENT state (short or long word) if available
+  const currentImage = getWordImage(currentWord);
 
-  const playSound = (isLong: boolean) => {
-    ElevenLabsService.play(isLong ? currentPair.long : currentPair.short);
+  useEffect(() => {
+    setHasMagic(false);
+  }, [currentIndex]);
+
+  const playSound = (word: string) => {
+    ElevenLabsService.play(word);
   };
 
   const toggleMagic = (e: React.MouseEvent | React.TouchEvent) => {
@@ -31,12 +40,11 @@ const MagicELesson: React.FC<MagicELessonProps> = ({ data, onComplete, onBack })
     
     // Play the appropriate sound after a tiny delay for visual transition
     setTimeout(() => {
-        playSound(newMagicState);
-    }, 200);
+        playSound(newMagicState ? currentPair.long : currentPair.short);
+    }, 150);
   };
 
   const handleNext = () => {
-    setHasMagic(false);
     if (currentIndex < data.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
@@ -54,68 +62,94 @@ const MagicELesson: React.FC<MagicELessonProps> = ({ data, onComplete, onBack })
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4 animate-fade-in bg-gradient-to-b from-[#e7effc] to-white">
+    <div className="h-full flex flex-col pt-4 pb-6 px-4 animate-fade-in bg-[#f0f9ff]">
       
-      <div className="mb-4 text-center">
-          <h2 className="text-3xl font-black text-[#ec4899] font-outfit mb-2 flex items-center justify-center gap-2">
-            <Sparkles className="animate-spin-slow" /> Magic E!
-          </h2>
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Make the vowel say its name</p>
+      {/* 1. Header: Simple Progress */}
+      <div className="flex justify-between items-center mb-6 px-2">
+          <button onClick={handlePrev} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
+              <ArrowLeft size={24} />
+          </button>
+          
+          <div className="flex flex-col items-center">
+             <h2 className="text-sm font-black text-[#ec4899] uppercase tracking-widest font-outfit flex items-center gap-1">
+                <Sparkles size={14} /> Level 6: Magic E
+             </h2>
+             <div className="flex gap-1 mt-1">
+                {data.map((_, i) => (
+                    <div key={i} className={`h-1.5 w-6 rounded-full transition-colors ${i === currentIndex ? 'bg-[#ec4899]' : 'bg-slate-200'}`} />
+                ))}
+             </div>
+          </div>
+
+          <div className="w-10" /> {/* Spacer for centering */}
       </div>
 
-      <div className="flex-1 w-full flex flex-col items-center justify-center">
+      {/* 2. Main Content Area */}
+      <div className="flex-1 flex flex-col items-center justify-center relative">
         
-        {/* Magic Wand Interactive Area */}
-        <div className="relative mb-12 group flex items-center">
-            {/* The Word - Tapping this plays the current sound */}
-            <div 
-                onClick={() => playSound(hasMagic)}
-                className={`
-                    text-7xl sm:text-9xl font-black font-outfit tracking-widest transition-all duration-500 cursor-pointer
-                    ${hasMagic ? 'text-[#ec4899] scale-110 drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]' : 'text-[#022d62]'}
-                `}
-            >
-                {hasMagic ? currentPair.long : currentPair.short}
+        {/* Main Card */}
+        <div 
+            onClick={toggleMagic} // Clicking anywhere on card toggles magic
+            className={`
+                relative w-full max-w-sm aspect-square bg-white rounded-3xl shadow-xl flex flex-col items-center justify-center p-6
+                transition-all duration-500 cursor-pointer overflow-hidden border-4
+                ${hasMagic ? 'border-[#ec4899] shadow-pink-200 scale-105' : 'border-transparent shadow-slate-200'}
+            `}
+        >
+            {/* Word Image (if available) */}
+            <div className="w-32 h-32 mb-6 relative z-10">
+                 <img 
+                    key={currentWord} // Force re-render/fade when word changes
+                    src={currentImage}
+                    onError={(e) => e.currentTarget.style.display = 'none'} // Hide if broken
+                    alt={currentWord}
+                    className="w-full h-full object-contain animate-fade-in-up"
+                 />
+            </div>
+
+            {/* The Word Display */}
+            <div className="text-center z-10 flex items-center justify-center">
+                <span className="text-6xl sm:text-7xl font-black font-outfit text-[#022d62] transition-all">
+                    {/* Render the base word part (e.g. "hop") */}
+                    {hasMagic ? currentPair.long.slice(0, -1) : currentPair.short}
+                </span>
+                
+                {/* The Magic E: Ghost vs Real */}
+                <span className={`
+                    text-6xl sm:text-7xl font-black font-outfit ml-1 transition-all duration-500
+                    ${hasMagic 
+                        ? 'text-[#ec4899] opacity-100 translate-y-0 rotate-0' 
+                        : 'text-slate-200 opacity-50 translate-y-2 rotate-12'
+                    }
+                `}>
+                    e
+                </span>
             </div>
             
-            {/* The Magic E Button/Indicator - Tapping this toggles the state */}
-            <button 
-                onClick={toggleMagic}
-                className={`
-                    ml-4 w-16 h-16 rounded-full flex items-center justify-center shadow-xl border-4 transition-all duration-500
-                    ${hasMagic ? 'bg-[#ec4899] border-white scale-125 rotate-12' : 'bg-white border-slate-200 hover:scale-110'}
-                `}
-            >
-                <span className={`text-4xl font-black transition-colors ${hasMagic ? 'text-white' : 'text-slate-300'}`}>e</span>
-                {hasMagic && <Sparkles className="absolute -top-2 -right-2 text-yellow-300 w-8 h-8 animate-bounce" />}
-            </button>
-            
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-12 text-center w-full">
-                <p className="text-sm font-bold text-slate-400">
-                    {hasMagic ? "✨ Tap the word to hear it! ✨" : "Tap the 'e' to add magic!"}
-                </p>
-            </div>
+            {/* Helper Text */}
+             <p className={`mt-6 text-sm font-bold transition-colors ${hasMagic ? 'text-[#ec4899]' : 'text-slate-400'}`}>
+                {hasMagic ? "✨ Magic!" : "Tap to add magic"}
+             </p>
         </div>
 
       </div>
 
-      <div className="flex gap-4 w-full max-w-sm px-4">
-          <button 
-                onClick={handlePrev}
-                className="p-4 bg-slate-100 text-slate-400 rounded-full font-black hover:bg-slate-200 transition-colors"
-          >
-              <ArrowLeft />
-          </button>
-          
+
+      {/* 3. Bottom Action Bar */}
+      <div className="mt-8 w-full max-w-sm mx-auto">
           <button 
                 onClick={handleNext}
+                disabled={!hasMagic} 
                 className={`
-                    flex-1 flex items-center justify-center gap-2 py-4 rounded-full font-black text-white shadow-lg transition-all text-xl
-                    ${hasMagic ? 'bg-[#ec4899] shadow-pink-500/30 animate-pulse' : 'bg-slate-300 cursor-not-allowed'}
+                    w-full py-4 rounded-2xl font-black text-xl shadow-lg transition-all flex items-center justify-center gap-2
+                    ${hasMagic 
+                        ? 'bg-[#ec4899] text-white shadow-pink-500/30 hover:scale-105 active:scale-95 animate-bounce-subtle' 
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    }
                 `}
-                disabled={!hasMagic}
           >
-                {currentIndex === data.length - 1 ? 'Finish!' : 'Next Word'} <ArrowRight />
+              {currentIndex === data.length - 1 ? 'Finish!' : 'Next Word'}
+              <ArrowRight strokeWidth={3} size={22} />
           </button>
       </div>
 
@@ -124,3 +158,4 @@ const MagicELesson: React.FC<MagicELessonProps> = ({ data, onComplete, onBack })
 };
 
 export default MagicELesson;
+

@@ -208,3 +208,12 @@ export const highlightWord = (word: string, positions: number[]): string => {
     return char;
   }).join('');
 };
+
+/**
+ * Get the local offline image for a specific word.
+ * Uses the ARASAAC symbols downloaded to /public/assets/images/words/
+ */
+export const getWordImage = (word: string): string => {
+    // Return relative path from public folder
+    return `/assets/images/words/${word.toLowerCase()}.png`;
+};

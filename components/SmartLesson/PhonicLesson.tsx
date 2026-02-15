@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ElevenLabsService } from '../../utils/ElevenLabsService';
-import { getLetterImage, highlightWord } from '../../utils/letterImages';
+import { getLetterImage, getWordImage, highlightWord } from '../../utils/letterImages';
 
 interface PhonicLessonProps {
   lessonId: number;
@@ -23,6 +23,9 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
 
   const currentItem = data[currentIndex] || data[0];
   const currentWord = currentItem.words[0] || currentItem.grapheme; // Use first word as example
+  
+  // Use local offline image if available, falling back to letter image for single letters
+  const wordImage = getWordImage(currentWord);
   const letterImage = getLetterImage(currentItem.grapheme);
 
   useEffect(() => {
@@ -139,15 +142,23 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
                 </div>
             ) : (
                 <div className="flex flex-col items-center">
-                    {/* Image if available, otherwise large text */}
-                    {letterImage ? (
-                        <div className="w-40 h-40 mb-4 rounded-xl overflow-hidden border-2 border-[#fb9610]">
-                            <img src={letterImage.imageUrl} alt={currentWord} className="w-full h-full object-cover" />
-                        </div>
-                    ) : (
-                        // Fallback icon or just text
-                        <div className="text-4xl mb-4">🖼️</div>
-                    )}
+                    {/* Prefer local offline image, fallback to letter image object */}
+                    <div className="w-40 h-40 mb-4 rounded-xl overflow-hidden border-2 border-[#fb9610] bg-white p-2">
+                         <img 
+                            src={wordImage} 
+                            onError={(e) => {
+                                // If local image fails, try fallback or hide
+                                if (letterImage) {
+                                  e.currentTarget.src = letterImage.imageUrl;
+                                } else {
+                                  e.currentTarget.style.display = 'none';
+                                }
+                            }}
+                            alt={currentWord} 
+                            className="w-full h-full object-contain" 
+                         />
+                    </div>
+                    
                     <div className="text-3xl sm:text-4xl font-black text-[#022d62]">
                         {currentWord}
                     </div>

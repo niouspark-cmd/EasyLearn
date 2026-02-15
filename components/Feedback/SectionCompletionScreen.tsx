@@ -46,9 +46,8 @@ const SectionCompletionScreen: React.FC<SectionCompletionScreenProps> = ({
     };
     frame();
     
-    // Play success sound
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
-    audio.play().catch(() => {});
+    // Sound removed as requested
+
   }, []);
 
   return (
