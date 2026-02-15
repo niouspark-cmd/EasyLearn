@@ -45,7 +45,13 @@ export class ElevenLabsService {
           
           console.log(`[TTS] Static Asset: "${lowerText}" -> File: "${filename}"`);
           const extension = filename.includes('.') ? '' : '.mp3';
-          const assetPath = `/assets/audio/phonemes/${filename}${extension}`;
+          
+          let assetPath = '';
+          if (filename.startsWith('/')) {
+              assetPath = `${filename}${extension}`;
+          } else {
+              assetPath = `/assets/audio/phonemes/${filename}${extension}`;
+          }
           
           await this.playLocalFile(assetPath, lowerText, options);
           return;
@@ -84,6 +90,14 @@ export class ElevenLabsService {
    * Helper to play a local audio file with fallback
    */
   private static async playLocalFile(assetPath: string, text: string, options?: any): Promise<void> {
+    let hasFallbackTriggered = false;
+    const triggerFallback = async (e: any) => {
+        if (hasFallbackTriggered) return;
+        hasFallbackTriggered = true;
+        console.warn(`[TTS] Local asset FAILED: "${assetPath}"`, e);
+        await this.fallbackPlay(text, options);
+    };
+
     try {
         // 1. Try Cache First
         const encodedPath = encodeURI(assetPath);
@@ -117,14 +131,13 @@ export class ElevenLabsService {
         
         audio.onerror = async (e) => {
             if (audioUrl.startsWith('blob:')) URL.revokeObjectURL(audioUrl);
-            console.warn(`[TTS] Local asset FAILED: "${encodedPath}"`, e);
-            await this.fallbackPlay(text, options);
+            await triggerFallback(e);
         };
 
         await audio.play();
     } catch (e) {
         console.error(`[TTS] Local playback EXCEPTION: "${assetPath}"`, e);
-        await this.fallbackPlay(text, options);
+        await triggerFallback(e);
     }
   }
 

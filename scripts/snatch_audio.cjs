@@ -6,6 +6,27 @@ const path = require('path');
 const words = [
   // Level 7: Tricky Words
   "the", "i", "to", "he", "she", "we", "me", "be", "was", "my", "you", "her", "they", "all", "are", "some", "one", "said", "come", "do", "so", "were", "when", "have", "there", "out", "like", "little", "what",
+  
+  // New Phase 3/5 Words (Expansion)
+  "when", "which", "wheel", "white", "whip", // wh
+  "phone", "photo", "dolphin", "alphabet", "graph", // ph
+  "day", "play", "say", "way", "stay", // ay
+  "sea", "eat", "meat", "read", "tea", // ea
+  "high", "night", "light", "bright", "right", // igh
+  "snow", "blow", "show", "slow", "grow", // ow (long)
+  "new", "few", "grew", "chew", "flew", // ew
+  "burn", "turn", "fur", "hurt", "surf", // ur
+  "bird", "girl", "shirt", "skirt", "first", // ir
+  "saw", "paw", "raw", "claw", "jaw", // aw
+  "sauce", "haul", "launch", "author", "august", // au
+  "boy", "toy", "joy", "royal", "enjoy", // oy
+  "cow", "now", "how", "brown", "down", // ow (short)
+  "air", "hair", "chair", "pair", "fair", // air
+  "ear", "hear", "dear", "near", "year", // ear
+  "pure", "sure", "cure", "lure", "manure", // ure
+  "these", "eve", "complete", "extreme", "delete", // e-e
+  "blue", "glue", "true", "clue", "rescue", // ue
+
   "am", "is", "it", "an", "big", "wish", "fast", "chip", "stop",
   "anchor", "ant", "apple", "arrow", "at", "axe", "igloo", "in", "ink", "insect", "itch", "nap", "neck", "nest", "net", "nose", "nut", "pan", "pen", "pig", "pin", "pink", "pot", "sand", "sat", "sit", "snake", "spot", "sun", "tap", "ten", "tent", "tin", "top", "turtle",
   "bag", "bat", "bed", "box", "bus", "buzz", "cake", "cap", "cat", "cot", "cup", "dad", "dip", "dog", "drum", "duck", "egg", "elbow", "elf", "envelope", "exit", "fan", "fig", "fish", "fox", "frog", "gap", "gate", "girl", "goat", "gun", "hand", "hat", "hen", "hop", "hut", "jam", "jelly", "jet", "jug", "jump", "kick", "king", "kite", "kitten", "leaf", "leg", "lemon", "lip", "log", "man", "map", "mat", "meat", "milk", "mix", "mug", "octopus", "off", "on", "orange", "ostrich", "rabbit", "rat", "red", "rug", "run", "six", "umbrella", "uncle", "under", "unhappy", "up", "van", "vase", "vest", "vet", "violin", "wall", "watch", "web", "wig", "wind", "yak", "yam", "yellow", "yo-yo", "yogurt", "zebra", "zigzag", "zip", "zoo",

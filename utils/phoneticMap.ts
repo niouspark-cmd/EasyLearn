@@ -13,7 +13,7 @@ interface PhonemeData {
   ipa: string;
 }
 
-const BASE_PATH = "../curriculum_sorted/";
+const BASE_PATH = "/assets/audio/curriculum_sorted/";
 
 const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   // --- Level 1: Golden Letters (SATPIN) ---
@@ -54,6 +54,15 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   "q":  { "trigger": BASE_PATH + "Level 3 - Digraphs/letter q.wav", "example": "queen", "ipa": "/kw/" }, // Moved Q here
   "qu": { "trigger": BASE_PATH + "Level 3 - Digraphs/letter q.wav", "example": "queen", "ipa": "/kw/" }, // Alias for convenience
 
+  // --- Level 4: Vowel Teams ---
+  "ai": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "rain", "ipa": "/eɪ/" }, 
+  "oa": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-3-o-long.mp3", "example": "boat", "ipa": "/oʊ/" },
+  "ie": { "trigger": BASE_PATH + "Level 1 - Golden Letters (SATPIN)/letter i.wav", "example": "pie", "ipa": "/aɪ/" }, 
+  // wait, let's map what we have in "all sounds raw here". 
+  // We have: btalpha-7-a-long (ai), btalpha-3-o-long (oa), btalpha-2-e-long (ee), btalpha-10-u-long (ue)
+  "ee": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-2-e-long.mp3", "example": "tree", "ipa": "/iː/" },
+  "or": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-6-o-dotted.mp3", "example": "corn", "ipa": "/ɔː/" }, // Sharing with oo/aw sound
+
   // --- Level 5: Other Sounds (Vowel Pairs / Diphthongs) ---
   "ou": { "trigger": BASE_PATH + "Level 5 - Other Sounds/alphasounds-ou.mp3", "example": "cloud", "ipa": "/aʊ/" },
   "ow": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-12-ow.mp3", "example": "cow", "ipa": "/aʊ/" },
@@ -67,6 +76,21 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   "er": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "mixer", "ipa": "/ə/" },
   "oo": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "book", "ipa": "/ʊ/" },
   "oi": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-11-oy.mp3", "example": "coin", "ipa": "/ɔɪ/" },
+
+  // --- Level 6: Magic E (Split Digraphs) ---
+  // These use the "Long Vowel" sounds
+  "a-e": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "cake", "ipa": "/eɪ/" },
+  "i-e": { "trigger": BASE_PATH + "Level 1 - Golden Letters (SATPIN)/letter i.wav", "example": "kite", "ipa": "/aɪ/" }, // Fallback until i-long found
+  "o-e": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-3-o-long.mp3", "example": "bone", "ipa": "/oʊ/" },
+  "u-e": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-10-u-long.mp3", "example": "cube", "ipa": "/juː/" },
+
+  // Additional Phase 3/5 Sounds
+  "zh": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-15-zh.mp3", "example": "measure", "ipa": "/ʒ/" },
+  "ure": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "pure", "ipa": "/jvə/" }, // Approx
+  "air": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "hair", "ipa": "/eə/" }, // Approx
+  "ear": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-2-e-long.mp3", "example": "ear", "ipa": "/ɪə/" }, // Approx
+  "aw": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "saw", "ipa": "/ɔː/" },
+  "ur": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "burn", "ipa": "/ɜː/" },
 };
 
 /**
@@ -74,14 +98,19 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
  * Located in /phonics_audio/[word].mp3
  */
 export const PHONICS_WORDS = [
-  "the", "to", "he", "she", "we", "me", "be", "was", "my", "you", "her", "they", "all", "are", "some", "one", "said", "come", "do", "so", "were", "when", "have", "there", "out", "like", "little", "what",
+  // Level 7: Tricky Words
+  "the", "i", "to", "he", "she", "we", "me", "be", "was", "my", "you", "her", "they", "all", "are", "some", "one", "said", "come", "do", "so", "were", "when", "have", "there", "out", "like", "little", "what",
+  
+  // Phase 3/5 Words
+  "when", "which", "wheel", "white", "whip", "phone", "photo", "dolphin", "alphabet", "graph", "day", "play", "say", "way", "stay", "sea", "eat", "meat", "read", "tea", "high", "night", "light", "bright", "right", "snow", "blow", "show", "slow", "grow", "new", "few", "grew", "chew", "flew", "burn", "turn", "fur", "hurt", "surf", "bird", "girl", "shirt", "skirt", "first", "saw", "paw", "raw", "claw", "jaw", "sauce", "haul", "launch", "author", "august", "boy", "toy", "joy", "royal", "enjoy", "cow", "now", "how", "brown", "down", "air", "hair", "chair", "pair", "fair", "ear", "hear", "dear", "near", "year", "pure", "sure", "cure", "lure", "manure", "these", "eve", "complete", "extreme", "delete", "blue", "glue", "true", "clue", "rescue",
+
   "am", "is", "it", "an", "big", "wish", "fast", "chip", "stop",
   "anchor", "ant", "apple", "arrow", "at", "axe", "igloo", "in", "ink", "insect", "itch", "nap", "neck", "nest", "net", "nose", "nut", "pan", "pen", "pig", "pin", "pink", "pot", "sand", "sat", "sit", "snake", "spot", "sun", "tap", "ten", "tent", "tin", "top", "turtle",
   "bag", "bat", "bed", "box", "bus", "buzz", "cake", "cap", "cat", "cot", "cup", "dad", "dip", "dog", "drum", "duck", "egg", "elbow", "elf", "envelope", "exit", "fan", "fig", "fish", "fox", "frog", "gap", "gate", "girl", "goat", "gun", "hand", "hat", "hen", "hop", "hut", "jam", "jelly", "jet", "jug", "jump", "kick", "king", "kite", "kitten", "leaf", "leg", "lemon", "lip", "log", "man", "map", "mat", "meat", "milk", "mix", "mug", "octopus", "off", "on", "orange", "ostrich", "rabbit", "rat", "red", "rug", "run", "six", "umbrella", "uncle", "under", "unhappy", "up", "van", "vase", "vest", "vet", "violin", "wall", "watch", "web", "wig", "wind", "yak", "yam", "yellow", "yo-yo", "yogurt", "zebra", "zigzag", "zip", "zoo",
-  "bench", "chick", "chin", "chips", "chop", "cloth", "fish", "king", "lung", "moth", "quack", "queen", "quick", "quilt", "quiz", "ring", "sheep", "shell", "ship", "shop", "sing", "strong", "thick", "thin", "thumb",
-  "bee", "boat", "coat", "cork", "corn", "dried", "feet", "flies", "fork", "goat", "green", "horn", "jeep", "lie", "nail", "pie", "rain", "road", "snail", "soap", "storm", "tail", "tie", "train", "tree",
-  "blue", "boil", "book", "car", "clue", "cloud", "coin", "cook", "farm", "foot", "glue", "hammer", "house", "ladder", "letter", "mixer", "moon", "mouse", "mouth", "oil", "park", "point", "shark", "shout", "soil", "spoon", "star", "statue", "supper", "tissue",
-  "bike", "bone", "cake", "cone", "cube", "five", "fuse", "game", "gate", "globe", "huge", "kite", "lake", "mule", "nine", "rope", "rose", "slide", "snake", "tube"
+  "bench", "chick", "chin", "chips", "chop", "cloth", "fish", "lung", "moth", "quack", "queen", "quick", "quilt", "quiz", "ring", "sheep", "shell", "ship", "shop", "sing", "strong", "thick", "thin", "thumb",
+  "bee", "boat", "coat", "cork", "corn", "dried", "feet", "flies", "fork", "green", "horn", "jeep", "lie", "nail", "pie", "rain", "road", "snail", "soap", "storm", "tail", "tie", "train", "tree", // 'goat' is duplicate
+  "boil", "book", "car", "cloud", "coin", "cook", "farm", "foot", "hammer", "house", "ladder", "letter", "mixer", "moon", "mouse", "mouth", "oil", "park", "point", "shark", "shout", "soil", "spoon", "star", "statue", "supper", "tissue", // duplicates like blue, glue, clue removed
+  "bike", "bone", "cone", "cube", "five", "fuse", "game", "gate", "globe", "huge", "lake", "mule", "nine", "rope", "rose", "slide", "tube" // duplicates removed
 ];
 
 export const getPhoneticSound = (grapheme: string): string => {
