@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './AppContext';
 import { PiperService } from './utils/PiperService';
+import { ElevenLabsService } from './utils/ElevenLabsService';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -20,9 +21,14 @@ import TermsPage from './pages/TermsPage';
 const App: React.FC = () => {
   // Initialize Piper TTS on app startup (downloads voice model if needed)
   useEffect(() => {
-    // Preload Piper voice model in background
+    // 1. Preload Piper voice model in background
     PiperService.initialize().catch(err => {
       console.log('[App] Piper initialization deferred (will retry on first use):', err);
+    });
+
+    // 2. Pre-warm static audio assets for 100% offline usage
+    ElevenLabsService.preWarmStaticAssets().catch(err => {
+        console.warn('[App] Pre-warm failed:', err);
     });
   }, []);
 

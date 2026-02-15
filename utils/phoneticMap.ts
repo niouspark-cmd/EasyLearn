@@ -65,6 +65,21 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   "ue": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-10-u-long.mp3", "example": "blue", "ipa": "/uː/" },
 };
 
+/**
+ * THE MASTER LIST: Words with high-quality human dictionary audio
+ * Located in /phonics_audio/[word].mp3
+ */
+export const PHONICS_WORDS = [
+  "the", "to", "he", "she", "we", "me", "be", "was", "my", "you", "her", "they", "all", "are", "some", "one", "said", "come", "do", "so", "were", "when", "have", "there", "out", "like", "little", "what",
+  "am", "is", "it", "an", "big", "wish", "fast", "chip", "stop",
+  "anchor", "ant", "apple", "arrow", "at", "axe", "igloo", "in", "ink", "insect", "itch", "nap", "neck", "nest", "net", "nose", "nut", "pan", "pen", "pig", "pin", "pink", "pot", "sand", "sat", "sit", "snake", "spot", "sun", "tap", "ten", "tent", "tin", "top", "turtle",
+  "bag", "bat", "bed", "box", "bus", "buzz", "cake", "cap", "cat", "cot", "cup", "dad", "dip", "dog", "drum", "duck", "egg", "elbow", "elf", "envelope", "exit", "fan", "fig", "fish", "fox", "frog", "gap", "gate", "girl", "goat", "gun", "hand", "hat", "hen", "hop", "hut", "jam", "jelly", "jet", "jug", "jump", "kick", "king", "kite", "kitten", "leaf", "leg", "lemon", "lip", "log", "man", "map", "mat", "meat", "milk", "mix", "mug", "octopus", "off", "on", "orange", "ostrich", "rabbit", "rat", "red", "rug", "run", "six", "umbrella", "uncle", "under", "unhappy", "up", "van", "vase", "vest", "vet", "violin", "wall", "watch", "web", "wig", "wind", "yak", "yam", "yellow", "yo-yo", "yogurt", "zebra", "zigzag", "zip", "zoo",
+  "bench", "chick", "chin", "chips", "chop", "cloth", "fish", "king", "lung", "moth", "quack", "queen", "quick", "quilt", "quiz", "ring", "sheep", "shell", "ship", "shop", "sing", "strong", "thick", "thin", "thumb",
+  "bee", "boat", "coat", "cork", "corn", "dried", "feet", "flies", "fork", "goat", "green", "horn", "jeep", "lie", "nail", "pie", "rain", "road", "snail", "soap", "storm", "tail", "tie", "train", "tree",
+  "blue", "boil", "book", "car", "clue", "cloud", "coin", "cook", "farm", "foot", "glue", "hammer", "house", "ladder", "letter", "mixer", "moon", "mouse", "mouth", "oil", "park", "point", "shark", "shout", "soil", "spoon", "star", "statue", "supper", "tissue",
+  "bike", "bone", "cake", "cone", "cube", "five", "fuse", "game", "gate", "globe", "huge", "kite", "lake", "mule", "nine", "rope", "rose", "slide", "snake", "tube"
+];
+
 export const getPhoneticSound = (grapheme: string): string => {
   const key = grapheme.toLowerCase();
   

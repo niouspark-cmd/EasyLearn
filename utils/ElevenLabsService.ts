@@ -1,7 +1,7 @@
 
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { AudioCache } from './AudioCache';
-import { STATIC_ASSETS, getPhonemeData } from './phoneticMap';
+import { STATIC_ASSETS, getPhonemeData, PHONICS_WORDS } from './phoneticMap';
 import { PiperService } from './PiperService';
 
 const API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
@@ -26,15 +26,18 @@ export class ElevenLabsService {
 
   /**
    * Play text using TTS with Smart Caching.
-   * Priority: 1) Static Assets (your recordings) → 2) Piper Offline TTS → 3) ElevenLabs API
+   * Priority: 
+   * 1) Static Assets (phonemes/digraphs)
+   * 2) High-Quality Phonics Audio (pre-downloaded words)
+   * 3) Piper Offline TTS
+   * 4) ElevenLabs API
    */
   static async play(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
       
       this.stop();
-      const lowerText = text.toLowerCase();
+      const lowerText = text.toLowerCase().trim();
 
-      // 0. CHECK STATIC ASSETS (The "Gold Standard" List)
-      // If the requested text matches a known static phoneme (e.g. "a", "sh", "ch"), play the local file.
+      // 0. CHECK STATIC PHONEMES (s, a, t, etc.)
       if (STATIC_ASSETS.includes(lowerText)) {
           const phonemeData = getPhonemeData(lowerText);
           const filename = phonemeData ? phonemeData.trigger : lowerText;
@@ -43,34 +46,19 @@ export class ElevenLabsService {
           const extension = filename.includes('.') ? '' : '.mp3';
           const assetPath = `/assets/audio/phonemes/${filename}${extension}`;
           
-          try {
-            const audio = new Audio(assetPath);
-            this.currentAudio = audio;
-            
-            if (options?.rate) audio.playbackRate = options.rate;
-            
-            audio.onended = () => {
-                console.log(`[TTS] Static Playback Ended: "${lowerText}"`);
-                options?.onComplete?.();
-                this.currentAudio = null;
-            };
-            
-            audio.onerror = async (e) => {
-                console.warn(`[TTS] Static asset FAILED: "${assetPath}"`, e);
-                // Fallback to Piper or API
-                await this.fallbackPlay(text, options);
-            };
-
-            await audio.play();
-            return;
-          } catch (e) {
-            console.error(`[TTS] Static playback EXCEPTION: "${assetPath}"`, e);
-            await this.fallbackPlay(text, options);
-            return;
-          }
+          await this.playLocalFile(assetPath, lowerText, options);
+          return;
       }
 
-      // 1. TRY PIPER OFFLINE TTS (if enabled)
+      // 1. CHECK HI-QUALITY PHONICS AUDIO (The "Final Level" words)
+      if (PHONICS_WORDS.includes(lowerText)) {
+          console.log(`[TTS] High-Quality Phonics Audio match: "${lowerText}"`);
+          const assetPath = `/phonics_audio/${lowerText.replace(/ /g, '_')}.mp3`;
+          await this.playLocalFile(assetPath, lowerText, options);
+          return;
+      }
+
+      // 2. TRY PIPER OFFLINE TTS (if enabled)
       // This provides consistent, offline neural TTS for blended words
       if (USE_PIPER_PRIMARY) {
           try {
@@ -87,8 +75,83 @@ export class ElevenLabsService {
           }
       }
 
-      // 2. FALLBACK: ElevenLabs API with LOCKED settings
+      // 3. FALLBACK: ElevenLabs API with LOCKED settings
       await this.playFromApi(text, options);
+  }
+
+  /**
+   * Helper to play a local audio file with fallback
+   */
+  private static async playLocalFile(assetPath: string, text: string, options?: any): Promise<void> {
+    try {
+        // 1. Try Cache First
+        const encodedPath = encodeURI(assetPath);
+        let audioUrl = encodedPath;
+        const cachedBlob = await AudioCache.getCachedAudio(encodedPath);
+        
+        if (cachedBlob) {
+            console.log(`[TTS] Playing from local cache: ${encodedPath}`);
+            audioUrl = URL.createObjectURL(cachedBlob);
+        } else {
+            // 2. Not in cache? Fetch and save in background
+            fetch(encodedPath).then(async res => {
+                if (res.ok) {
+                    const blob = await res.blob();
+                    await AudioCache.saveLocalAudio(encodedPath, blob);
+                }
+            }).catch(() => {});
+        }
+
+        const audio = new Audio(audioUrl);
+        this.currentAudio = audio;
+        
+        if (options?.rate) audio.playbackRate = options.rate;
+        
+        audio.onended = () => {
+            if (audioUrl.startsWith('blob:')) URL.revokeObjectURL(audioUrl);
+            console.log(`[TTS] Local Playback Ended: "${text}"`);
+            options?.onComplete?.();
+            this.currentAudio = null;
+        };
+        
+        audio.onerror = async (e) => {
+            if (audioUrl.startsWith('blob:')) URL.revokeObjectURL(audioUrl);
+            console.warn(`[TTS] Local asset FAILED: "${encodedPath}"`, e);
+            await this.fallbackPlay(text, options);
+        };
+
+        await audio.play();
+    } catch (e) {
+        console.error(`[TTS] Local playback EXCEPTION: "${assetPath}"`, e);
+        await this.fallbackPlay(text, options);
+    }
+  }
+
+  /**
+   * Mass pre-warm of all phonics assets for offline use
+   */
+  static async preWarmStaticAssets() {
+      const urls: string[] = [];
+      
+      // 1. Word assets
+      PHONICS_WORDS.forEach(word => {
+          urls.push(`/phonics_audio/${word.toLowerCase().replace(/ /g, '_')}.mp3`);
+      });
+
+      // 2. Phoneme assets
+      STATIC_ASSETS.forEach(key => {
+          const data = getPhonemeData(key);
+          if (data) {
+              const filename = data.trigger;
+              const extension = filename.includes('.') ? '' : '.mp3';
+              // Use encodeURI to handle spaces and special characters in paths
+              const fullUrl = encodeURI(`/assets/audio/phonemes/${filename}${extension}`);
+              urls.push(fullUrl);
+          }
+      });
+
+      console.log(`[TTS] Starting background pre-warm of ${urls.length} assets...`);
+      await AudioCache.preWarmLocal(urls);
   }
 
   /**
