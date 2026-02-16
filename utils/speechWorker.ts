@@ -29,7 +29,8 @@ class SpeechRecognitionWorker {
       // or use a very lightweight wav2vec2 model.
       // For this demo, let's use 'Xenova/wav2vec2-large-xlsr-53-english' or similar if available,
       // but 'Xenova/wav2vec2-bert-CV16-en' is the one suggested.
-      this.transcriber = await pipeline('automatic-speech-recognition', 'Xenova/wav2vec2-bert-CV16-en');
+      // Use whisper-tiny.en which is extremely stable and highly accurate for short bursts
+      this.transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
       
       self.postMessage({ status: 'ready' });
     } catch (error) {

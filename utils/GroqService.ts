@@ -127,7 +127,7 @@ export class GroqService {
 
         } catch (e) {
             console.error("[Groq] Transcription failed", e);
-            return "";
+            throw e; // Rethrow to allow fallback in hybrid logic
         }
     }
 }

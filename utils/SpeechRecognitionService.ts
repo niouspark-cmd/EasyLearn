@@ -49,17 +49,24 @@ export class SpeechRecognitionService {
             this.initialize();
         }
 
-        // Wait for ready if not yet
+        // Wait for ready if not yet (with 10s timeout)
         if (!this.isReady) {
-            await new Promise<void>(resolve => {
-                this.onReadyCallbacks.push(resolve);
-            });
+            await Promise.race([
+                new Promise<void>(resolve => {
+                    this.onReadyCallbacks.push(resolve);
+                }),
+                new Promise((_, reject) => setTimeout(() => reject("Offline model timeout"), 15000))
+            ]);
         }
 
         const audioData = await this.prepareAudio(audioBlob);
 
-        return new Promise((resolve) => {
-            this.pendingResolve = resolve;
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject("Transcription timeout"), 10000);
+            this.pendingResolve = (text) => {
+                clearTimeout(timeout);
+                resolve(text);
+            };
             this.worker?.postMessage({
                 type: 'process',
                 audio: audioData
@@ -74,10 +81,19 @@ export class SpeechRecognitionService {
     private static async prepareAudio(audioBlob: Blob): Promise<Float32Array> {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
         const arrayBuffer = await audioBlob.arrayBuffer();
+        
+        // Use a clean decoding process
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         
-        // We only care about one channel for transcription
-        const channelData = audioBuffer.getChannelData(0);
+        // Resample to 16kHz if the context didn't do it automatically (safari/older browsers)
+        let offlineContext = new OfflineAudioContext(1, audioBuffer.duration * 16000, 16000);
+        let source = offlineContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(offlineContext.destination);
+        source.start();
+        
+        const renderedBuffer = await offlineContext.startRendering();
+        const channelData = renderedBuffer.getChannelData(0);
         
         await audioContext.close();
         return channelData;

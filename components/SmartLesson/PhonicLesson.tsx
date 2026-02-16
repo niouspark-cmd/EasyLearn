@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Volume2, CheckCircle, ArrowRight, ArrowLeft, XCircle, Loader2, WifiOff } from 'lucide-react';
+import { Volume2, CheckCircle, ArrowRight, ArrowLeft, XCircle, Loader2, WifiOff, Zap } from 'lucide-react';
 import { ElevenLabsService } from '../../utils/ElevenLabsService';
 import { GroqService } from '../../utils/GroqService';
 import { SpeechRecognitionService } from '../../utils/SpeechRecognitionService';
@@ -22,6 +22,7 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [transcription, setTranscription] = useState("");
+  const [analysisMode, setAnalysisMode] = useState<'online' | 'offline' | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [masteredItems, setMasteredItems] = useState<string[]>([]);
@@ -65,18 +66,23 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
     // 1. Literal Check
     if (r.includes(t)) return true;
     
-    // 2. Fuzzy Phonetic Check (Common Whisper mis-transcriptions for children)
+    // 2. Fuzzy Phonetic Check (Expanded for children)
     const phonemeMap: Record<string, string[]> = {
-        's': ['s', 'ess', 'sss', 'snake', 'sea'],
-        'a': ['a', 'ah', 'apple', 'at'],
-        't': ['t', 'tuh', 'tea', 'tent', 'to'],
-        'p': ['p', 'puh', 'pig', 'pea'],
-        'i': ['i', 'ih', 'eye', 'igloo'],
-        'n': ['n', 'nnn', 'en', 'nest'],
-        'igh': ['i', 'eye', 'high', 'night', 'light'],
-        'air': ['air', 'hair', 'ear', 'bear'],
-        'ear': ['ear', 'hear', 'here', 'near'],
-        'ure': ['ur', 'pure', 'sure', 'cure']
+        's': ['s', 'ess', 'sss', 'snake', 'sea', 'sun'],
+        'a': ['a', 'ah', 'apple', 'at', 'ant'],
+        't': ['t', 'tuh', 'tea', 'tent', 'to', 'top'],
+        'p': ['p', 'puh', 'pig', 'pea', 'pin'],
+        'i': ['i', 'ih', 'eye', 'igloo', 'ice'],
+        'n': ['n', 'nnn', 'en', 'nest', 'net'],
+        'sh': ['sh', 'ship', 'she', 'shoe'],
+        'ch': ['ch', 'chip', 'chair', 'chick'],
+        'th': ['th', 'thumb', 'the', 'this'],
+        'igh': ['i', 'eye', 'high', 'night', 'light', 'ice'],
+        'ie': ['i', 'eye', 'pie', 'tie', 'ice'],
+        'air': ['air', 'hair', 'ear', 'bear', 'fair'],
+        'ear': ['ear', 'hear', 'here', 'near', 'deer'],
+        'ure': ['ur', 'pure', 'sure', 'cure', 'your'],
+        'or': ['or', 'fork', 'corn', 'horn']
     };
     
     if (phonemeMap[t]) {
@@ -111,16 +117,26 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
         try {
             const target = stage === 'sound' ? currentItem.grapheme : currentWord;
             let transcript = "";
+            let mode: 'online' | 'offline' = 'offline';
             
-            console.log("[STT] Attempting offline transcription...");
-            try {
+            // HYBRID LOGIC:
+            if (navigator.onLine) {
+                console.log("[STT] Online detected. Using Groq Smart Analysis...");
+                try {
+                    transcript = await GroqService.transcribeAudio(audioBlob, target);
+                    mode = 'online';
+                } catch (e) {
+                    console.warn("[STT] Online failed, switching to local backup.");
+                    transcript = await SpeechRecognitionService.transcribe(audioBlob);
+                    mode = 'offline';
+                }
+            } else {
+                console.log("[STT] Offline detected. Using Local Browser Analysis...");
                 transcript = await SpeechRecognitionService.transcribe(audioBlob);
-                console.log("[STT] Offline result:", transcript);
-            } catch (offlineErr) {
-                console.warn("[STT] Offline failed, falling back to Groq:", offlineErr);
-                transcript = await GroqService.transcribeAudio(audioBlob, target);
+                mode = 'offline';
             }
             
+            setAnalysisMode(mode);
             setTranscription(transcript);
             const correct = checkPronunciation(target, transcript);
             setIsCorrect(correct);
@@ -242,17 +258,17 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
                  onMouseDown={startRecording}
                  onMouseUp={stopRecording}
                  onMouseLeave={stopRecording}
-                 onTouchStart={(e) => { e.preventDefault(); startRecording(); }}
-                 onTouchEnd={(e) => { e.preventDefault(); stopRecording(); }}
+                 onTouchStart={startRecording}
+                 onTouchEnd={stopRecording}
                  className={`
-                     w-full py-4 rounded-2xl font-black text-xl shadow-lg transition-all border-b-4
+                     w-full py-4 rounded-2xl font-black text-xl shadow-lg transition-all border-b-4 select-none touch-none
                      ${isRecording 
                          ? 'bg-rose-500 text-white border-rose-700 translate-y-1' 
                          : 'bg-[#fb9610] text-white border-orange-700 active:translate-y-1 hover:brightness-110'
                      }
                  `}
              >
-                 {isRecording ? 'Listening...' : stage === 'sound' ? 'Say the Sound 🎤' : 'Say the Word 🎤'}
+                 {isRecording ? 'Listening...' : stage === 'sound' ? 'Hold & Say the Sound 🎤' : 'Hold & Say the Word 🎤'}
              </button>
         ) : (
              <div className="flex flex-col gap-3 animate-fade-in-up">
@@ -261,7 +277,7 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
                     {isAnalyzing ? (
                         <div className="flex flex-col items-center gap-2 py-2">
                             <Loader2 className="animate-spin text-[#fb9610]" size={32} />
-                            <p className="text-sm font-bold text-slate-400">Analyzing (Offline)...</p>
+                            <p className="text-sm font-bold text-slate-400">Checking...</p>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-1">
@@ -271,11 +287,6 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
                                         <CheckCircle size={28} fill="currentColor" className="text-white" />
                                         <span className="text-xl font-black italic">Perfect!</span>
                                     </div>
-                                    <p className="text-xs text-slate-400 italic">"I heard: {transcription}"</p>
-                                    <div className="flex items-center gap-1 mt-2 px-2 py-0.5 bg-slate-50 rounded-full">
-                                        <WifiOff size={10} className="text-slate-300" />
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Verified Offline</span>
-                                    </div>
                                 </>
                             ) : (
                                 <>
@@ -283,9 +294,6 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
                                         <XCircle size={28} fill="currentColor" className="text-white" />
                                         <span className="text-xl font-black italic">Almost there...</span>
                                     </div>
-                                    <p className="text-xs text-slate-400 italic">
-                                        {transcription ? `I heard: "${transcription}"` : "I couldn't quite hear that."}
-                                    </p>
                                 </>
                             )}
                         </div>
