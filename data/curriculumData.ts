@@ -70,7 +70,9 @@ export const CURRICULUM_DATA: CurriculumLevel[] = [
       { grapheme: 'ch', words: ['chop', 'chin', 'chick', 'chips', 'bench'] },
       { grapheme: 'th', words: ['thin', 'thick', 'moth', 'cloth', 'thumb'] },
       { grapheme: 'ng', words: ['ring', 'king', 'lung', 'strong', 'sing'] },
-      { grapheme: 'qu', words: ['queen', 'quick', 'quilt', 'quiz', 'quack'] }
+      { grapheme: 'qu', words: ['queen', 'quick', 'quilt', 'quiz', 'quack'] },
+      { grapheme: 'wh', words: ['wheel', 'when', 'whip', 'white', 'which'] },
+      { grapheme: 'ph', words: ['photo', 'dolphin', 'phone', 'alphabet', 'graph'] }
     ]
   },
   {
@@ -81,9 +83,12 @@ export const CURRICULUM_DATA: CurriculumLevel[] = [
     color: '#f59e0b',
     data: [
       { grapheme: 'ai', words: ['rain', 'train', 'snail', 'tail', 'nail'] },
+      { grapheme: 'ay', words: ['day', 'play', 'say', 'way', 'stay'] },
       { grapheme: 'oa', words: ['boat', 'goat', 'coat', 'soap', 'road'] },
+      { grapheme: 'oe', words: ['toe', 'foe', 'potatoes', 'tomatoes'] },
       { grapheme: 'ie', words: ['pie', 'tie', 'lie', 'flies', 'dried'] },
       { grapheme: 'ee', words: ['tree', 'bee', 'feet', 'green', 'jeep'] },
+      { grapheme: 'ea', words: ['sea', 'meat', 'read', 'tea', 'eat'] },
       { grapheme: 'or', words: ['fork', 'corn', 'cork', 'horn', 'storm'] }
     ]
   },
@@ -96,10 +101,17 @@ export const CURRICULUM_DATA: CurriculumLevel[] = [
     data: [
       { grapheme: 'oo', words: ['book', 'cook', 'foot', 'moon', 'spoon'] },
       { grapheme: 'ou', words: ['cloud', 'mouth', 'mouse', 'house', 'shout'] },
+      { grapheme: 'ow', words: ['cow', 'now', 'how', 'brown', 'down'] },
       { grapheme: 'oi', words: ['coin', 'boil', 'oil', 'soil', 'point'] },
+      { grapheme: 'oy', words: ['boy', 'toy', 'joy', 'royal', 'enjoy'] },
       { grapheme: 'ue', words: ['glue', 'blue', 'clue', 'tissue', 'statue'] },
+      { grapheme: 'ew', words: ['new', 'few', 'grew', 'chew', 'flew'] },
       { grapheme: 'er', words: ['mixer', 'letter', 'hammer', 'ladder', 'supper'] },
-      { grapheme: 'ar', words: ['car', 'park', 'star', 'shark', 'farm'] }
+      { grapheme: 'ir', words: ['bird', 'girl', 'shirt', 'skirt', 'first'] },
+      { grapheme: 'ur', words: ['burn', 'turn', 'fur', 'hurt', 'surf'] },
+      { grapheme: 'ar', words: ['car', 'park', 'star', 'shark', 'farm'] },
+      { grapheme: 'au', words: ['paul', 'launch', 'haul', 'author', 'august'] },
+      { grapheme: 'aw', words: ['saw', 'paw', 'raw', 'claw', 'jaw'] }
     ]
   },
   {
@@ -110,6 +122,7 @@ export const CURRICULUM_DATA: CurriculumLevel[] = [
     color: '#ec4899',
     data: [
       { grapheme: 'a-e', words: ['cake', 'snake', 'game', 'gate', 'lake'] },
+      { grapheme: 'e-e', words: ['eve', 'these', 'complete', 'extreme', 'delete'] },
       { grapheme: 'i-e', words: ['bike', 'kite', 'five', 'nine', 'slide'] },
       { grapheme: 'o-e', words: ['bone', 'rose', 'cone', 'globe', 'rope'] },
       { grapheme: 'u-e', words: ['cube', 'tube', 'mule', 'fuse', 'huge'] }
@@ -117,16 +130,45 @@ export const CURRICULUM_DATA: CurriculumLevel[] = [
   },
   {
     id: 7,
-    title: 'Level 7: Tricky Words',
+    title: 'Level 7: Trigraphs',
+    subtitle: 'Three letters, one sound.',
+    type: 'phonic',
+    color: '#d946ef',
+    data: [
+      { grapheme: 'igh', words: ['high', 'night', 'light', 'bright', 'right'] },
+      { grapheme: 'air', words: ['hair', 'chair', 'pair', 'fair', 'air'] },
+      { grapheme: 'ear', words: ['hear', 'ear', 'dear', 'near', 'year'] },
+      { grapheme: 'ure', words: ['pure', 'sure', 'cure', 'lure', 'manure'] }
+    ]
+  },
+  {
+    id: 8,
+    title: 'Phase 4: Blends',
+    subtitle: 'Blending adjacent consonants.',
+    type: 'blending',
+    color: '#06b6d4',
+    data: [
+      { grapheme: 'st', words: ['stop', 'step', 'star', 'fist', 'nest'] },
+      { grapheme: 'nd', words: ['sand', 'hand', 'band', 'pond', 'wind'] },
+      { grapheme: 'mp', words: ['lamp', 'jump', 'camp', 'pump', 'damp'] },
+      { grapheme: 'nt', words: ['tent', 'ant', 'hunt', 'sent', 'mint'] },
+      { grapheme: 'nk', words: ['pink', 'sink', 'bunk', 'tank', 'wink'] },
+      { grapheme: 'ft', words: ['lift', 'loft', 'soft', 'tuft', 'left'] },
+      { grapheme: 'sk', words: ['skip', 'desk', 'mask', 'tusk', 'ask'] },
+      { grapheme: 'lt', words: ['belt', 'melt', 'tilt', 'felt', 'kilt'] },
+      { grapheme: 'br', words: ['brick', 'brush', 'crab', 'crib', 'trap'] } // Mixing some start blends
+    ]
+  },
+  {
+    id: 9,
+    title: 'Tricky Words (Phase 3-5)',
     subtitle: 'Words you just have to know.',
     type: 'tricky-words',
     color: '#ef4444',
     data: [
-      { grapheme: 'Set A', words: ['the', 'I', 'to', 'he', 'she', 'we'] },
-      { grapheme: 'Set B', words: ['me', 'be', 'was', 'my', 'you', 'her'] },
-      { grapheme: 'Set C', words: ['they', 'all', 'are', 'some', 'one', 'said'] },
-      { grapheme: 'Set D', words: ['come', 'do', 'so', 'were', 'when', 'have'] },
-      { grapheme: 'Set E', words: ['there', 'out', 'like', 'little', 'what'] }
+      { grapheme: 'Phase 3', words: ['he', 'she', 'we', 'me', 'be', 'was', 'you', 'they', 'all', 'are', 'my', 'her'] },
+      { grapheme: 'Phase 4', words: ['said', 'have', 'like', 'so', 'do', 'some', 'come', 'were', 'there', 'little', 'one', 'when', 'out', 'what'] },
+      { grapheme: 'Phase 5', words: ['oh', 'their', 'people', 'looked', 'called', 'asked', 'could', 'about'] }
     ]
   }
 ];

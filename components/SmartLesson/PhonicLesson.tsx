@@ -142,22 +142,19 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
                 </div>
             ) : (
                 <div className="flex flex-col items-center">
-                    {/* Prefer local offline image, fallback to letter image object */}
-                    <div className="w-40 h-40 mb-4 rounded-xl overflow-hidden border-2 border-[#fb9610] bg-white p-2">
-                         <img 
-                            src={wordImage} 
-                            onError={(e) => {
-                                // If local image fails, try fallback or hide
-                                if (letterImage) {
-                                  e.currentTarget.src = letterImage.imageUrl;
-                                } else {
-                                  e.currentTarget.style.display = 'none';
-                                }
-                            }}
-                            alt={currentWord} 
-                            className="w-full h-full object-contain" 
-                         />
-                    </div>
+                    {wordImage && (
+                        <div className="w-40 h-40 mb-4 rounded-xl overflow-hidden border-2 border-[#fb9610] bg-white p-2">
+                             <img 
+                                src={wordImage} 
+                                onError={(e) => {
+                                    // Hide the entire container if image fails
+                                    (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                                }}
+                                alt={currentWord} 
+                                className="w-full h-full object-contain" 
+                             />
+                        </div>
+                    )}
                     
                     <div className="text-3xl sm:text-4xl font-black text-[#022d62]">
                         {currentWord}

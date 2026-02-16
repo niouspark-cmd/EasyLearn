@@ -35,14 +35,14 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   "g": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter g.wav", "example": "goat", "ipa": "/g/" },
   "o": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter o.wav", "example": "octopus", "ipa": "/ɒ/" },
   "u": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter u.wav", "example": "umbrella", "ipa": "/ʌ/" },
-  "l": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter L.wav", "example": "lion", "ipa": "/l/" }, // Note capital L
+  "l": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter L.wav", "example": "leg", "ipa": "/l/" }, // Changed lion -> leg
   "f": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter f.wav", "example": "fish", "ipa": "/f/" },
-  "b": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter b.wav", "example": "bat", "ipa": "/b/" },
+  "b": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter b.wav", "example": "bag", "ipa": "/b/" }, // Changed bat -> bag
   "j": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter j.wav", "example": "jam", "ipa": "/dʒ/" },
-  "z": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter z.wav", "example": "zebra", "ipa": "/z/" },
+  "z": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter z.wav", "example": "zip", "ipa": "/z/" }, // Changed zebra -> zip
   "w": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter w.wav", "example": "web", "ipa": "/w/" },
   "v": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter v.wav", "example": "van", "ipa": "/v/" },
-  "y": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter y.wav", "example": "yo-yo", "ipa": "/j/" },
+  "y": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter y.wav", "example": "yogurt", "ipa": "/j/" }, // Changed yo-yo -> yogurt
   "x": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter x.wav", "example": "box", "ipa": "/ks/" },
 
   // --- Level 3: Digraphs ---
@@ -80,17 +80,33 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   // --- Level 6: Magic E (Split Digraphs) ---
   // These use the "Long Vowel" sounds
   "a-e": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "cake", "ipa": "/eɪ/" },
+  "e-e": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-2-e-long.mp3", "example": "eve", "ipa": "/iː/" },
   "i-e": { "trigger": BASE_PATH + "Level 1 - Golden Letters (SATPIN)/letter i.wav", "example": "kite", "ipa": "/aɪ/" }, // Fallback until i-long found
   "o-e": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-3-o-long.mp3", "example": "bone", "ipa": "/oʊ/" },
   "u-e": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-10-u-long.mp3", "example": "cube", "ipa": "/juː/" },
 
   // Additional Phase 3/5 Sounds
   "zh": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-15-zh.mp3", "example": "measure", "ipa": "/ʒ/" },
-  "ure": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "pure", "ipa": "/jvə/" }, // Approx
-  "air": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "hair", "ipa": "/eə/" }, // Approx
-  "ear": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-2-e-long.mp3", "example": "ear", "ipa": "/ɪə/" }, // Approx
   "aw": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "saw", "ipa": "/ɔː/" },
   "ur": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "burn", "ipa": "/ɜː/" },
+  
+  // Phase 5 New Graphemes (Mapped to existing sounds)
+  "ay": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "day", "ipa": "/eɪ/" },
+  "ea": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-2-e-long.mp3", "example": "sea", "ipa": "/iː/" },
+  "ir": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "bird", "ipa": "/ɜː/" }, // Same as ur/er
+  "wh": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter w.wav", "example": "wheel", "ipa": "/w/" },
+  "ph": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter f.wav", "example": "photo", "ipa": "/f/" },
+  "ew": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-10-u-long.mp3", "example": "new", "ipa": "/juː/" },
+  "oe": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-3-o-long.mp3", "example": "toe", "ipa": "/oʊ/" },
+  "au": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "paul", "ipa": "/ɔː/" }, // Same as aw
+
+  // Trigraphs (Level 7) - Specific mappings
+  "air": { "trigger": "/phonics_audio/air.mp3?v=9", "example": "hair", "ipa": "/eə/" },
+  "ear": { "trigger": "/phonics_audio/ear.mp3?v=9", "example": "hear", "ipa": "/ɪə/" },
+  "ure": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "pure", "ipa": "/ɜː/" },
+  
+  // Highlighting specific mapping for IGH -> "Eye" (Pronoun I sound)
+  "igh": { "trigger": "/phonics_audio/i.mp3?v=9", "example": "high", "ipa": "/aɪ/" },
 };
 
 /**

@@ -1,81 +1,78 @@
 export class AudioCache {
-  private static CACHE_NAME = 'adesua-offline-v1';
+  private static CACHE_NAME = 'adesua-offline-v8'; // FORCE UPDATE
 
   /**
-   * getAudio
-   * For API calls (ElevenLabs)
+   * Generates a cache key for text-to-speech audio
+   */
+  private static getKey(text: string, voiceId: string): string {
+    return `tts-${voiceId}-${text.toLowerCase().trim()}`;
+  }
+
+  /**
+   * Retrieves audio blob from cache if it exists
    */
   static async getAudio(text: string, voiceId: string): Promise<Blob | null> {
-    const key = this.generateKey(text, voiceId);
-    return this.getFromCache(key);
-  }
-
-  /**
-   * getCachedAudio
-   * For local asset URLs
-   */
-  static async getCachedAudio(url: string): Promise<Blob | null> {
-      return this.getFromCache(url);
-  }
-
-  private static async getFromCache(key: string): Promise<Blob | null> {
     try {
-      if (!('caches' in window)) return null;
       const cache = await caches.open(this.CACHE_NAME);
-      const response = await cache.match(key);
-      if (response) return await response.blob();
-      return null;
+      const response = await cache.match(this.getKey(text, voiceId));
+      if (response) {
+        return await response.blob();
+      }
     } catch (e) {
-      return null;
+      console.warn('AudioCache read error:', e);
     }
+    return null;
   }
 
   /**
-   * saveAudio
-   * For API calls (ElevenLabs)
+   * Saves audio blob to cache
    */
-  static async saveAudio(text: string, voiceId: string, audioBlob: Blob): Promise<void> {
-    const key = this.generateKey(text, voiceId);
-    await this.putInCache(key, audioBlob);
-  }
-
-  /**
-   * saveLocalAudio
-   * For local asset URLs
-   */
-  static async saveLocalAudio(url: string, audioBlob: Blob): Promise<void> {
-      await this.putInCache(url, audioBlob);
-  }
-
-  private static async putInCache(key: string, audioBlob: Blob): Promise<void> {
+  static async saveAudio(text: string, voiceId: string, blob: Blob): Promise<void> {
     try {
-      if (!('caches' in window)) return;
       const cache = await caches.open(this.CACHE_NAME);
-      const response = new Response(audioBlob, {
+      const response = new Response(blob, {
         headers: { 'Content-Type': 'audio/mpeg' }
       });
-      await cache.put(key, response);
+      await cache.put(this.getKey(text, voiceId), response);
     } catch (e) {
-      console.error('[AudioCache] Save failed', e);
+      console.warn('AudioCache write error:', e);
     }
   }
 
   /**
-   * Pre-warm cache with a list of texts (API)
+   * Retrieves generic cached audio by URL
    */
-  static async preWarm(texts: string[], voiceId: string, voiceFetcher: (text: string) => Promise<Blob | null>) {
-    console.log(`[AudioCache] Pre-warming ${texts.length} items...`);
-    for (const text of texts) {
-        const exists = await this.getAudio(text, voiceId);
-        if (!exists) {
-            const blob = await voiceFetcher(text);
-            if (blob) await this.saveAudio(text, voiceId, blob);
-        }
-    }
+  static async getCachedAudio(url: string): Promise<Blob | null> {
+      try {
+          const cache = await caches.open(this.CACHE_NAME);
+          const response = await cache.match(url);
+          if (response) {
+              return await response.blob();
+          }
+      } catch (e) {
+          console.warn('AudioCache (URL) read error:', e);
+      }
+      return null;
   }
 
   /**
-   * Pre-warm local assets (Background caching)
+   * Saves generic audio by URL
+   */
+  static async saveLocalAudio(url: string, blob: Blob): Promise<void> {
+      try {
+          const cache = await caches.open(this.CACHE_NAME);
+          const response = new Response(blob, {
+            headers: { 'Content-Type': 'audio/mpeg' }
+          });
+          await cache.put(url, response);
+      } catch (e) {
+          console.warn('AudioCache (URL) write error:', e);
+      }
+  }
+  
+  /**
+   * Pre-warms a list of URLs by fetching them and saving to cache
+   * Does this silently in the background
    */
   static async preWarmLocal(urls: string[]) {
       console.log(`[AudioCache] Background caching ${urls.length} local assets...`);
@@ -100,15 +97,5 @@ export class AudioCache {
           }));
       }
       console.log(`[AudioCache] Local assets cached.`);
-  }
-
-  static async clear() {
-      if ('caches' in window) {
-          await caches.delete(this.CACHE_NAME);
-      }
-  }
-
-  private static generateKey(text: string, voiceId: string): string {
-    return `https://cache.local/audio/${voiceId}/${encodeURIComponent(text.toLowerCase())}`;
   }
 }

@@ -13,184 +13,184 @@ export const LETTER_IMAGES: Record<string, LetterImage> = {
   's': {
     letter: 's',
     word: 'snake',
-    imageUrl: 'https://images.pexels.com/photos/175255/pexels-photo-175255.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=1',
+    imageUrl: '/assets/images/words/snake.png',
     description: 'A friendly snake with a big smile',
-    highlightPositions: [0] // 's'nake - highlight first letter
+    highlightPositions: [0]
   },
   'a': {
     letter: 'a',
     word: 'apple',
-    imageUrl: 'https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=1',
+    imageUrl: '/assets/images/words/apple.png',
     description: 'A bright red apple on a tree',
-    highlightPositions: [0] // 'a'pple - highlight first letter
+    highlightPositions: [0]
   },
   't': {
     letter: 't',
-    word: 'turtle',
-    imageUrl: 'https://images.pexels.com/photos/162349/turtle-green-sea-turtle-tortoise-caribbean-162349.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=1',
-    description: 'A cute turtle with a patterned shell',
-    highlightPositions: [0] // 't'urtle - highlight first letter
+    word: 'tent',
+    imageUrl: '/assets/images/words/tent.png',
+    description: 'A camping tent',
+    highlightPositions: [0]
   },
   'p': {
     letter: 'p',
-    word: 'panda',
-    imageUrl: 'https://images.pexels.com/photos/1661005/pexels-photo-1661005.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=1',
-    description: 'A playful panda bear eating bamboo',
-    highlightPositions: [0] // 'p'anda - highlight first letter
+    word: 'pig',
+    imageUrl: '/assets/images/words/pig.png',
+    description: 'A pink pig',
+    highlightPositions: [0]
   },
   'i': {
     letter: 'i',
     word: 'igloo',
-    imageUrl: 'https://images.pexels.com/photos/326629/pexels-photo-326629.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=1',
+    imageUrl: '/assets/images/words/igloo.png',
     description: 'A cozy igloo in the snow',
-    highlightPositions: [0] // 'i'gloo - highlight first letter
+    highlightPositions: [0]
   },
   'n': {
     letter: 'n',
     word: 'nest',
-    imageUrl: 'https://images.pexels.com/photos/459113/pexels-photo-459113.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=1',
-    description: 'A bird\'s nest with eggs',
-    highlightPositions: [0] // 'n'est - highlight first letter
+    imageUrl: '/assets/images/words/nest.png',
+    description: 'A bird\'s nest',
+    highlightPositions: [0]
   },
   'b': {
     letter: 'b',
-    word: 'ball',
-    imageUrl: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=300&h=300&fit=crop&crop=center',
-    description: 'A colorful bouncing ball',
-    highlightPositions: [0] // 'b'all - highlight first letter
+    word: 'bag',
+    imageUrl: '/assets/images/words/bag.png',
+    description: 'A school bag',
+    highlightPositions: [0]
   },
   'c': {
     letter: 'c',
     word: 'cat',
-    imageUrl: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop&crop=center',
-    description: 'A fluffy cat with bright eyes',
-    highlightPositions: [0] // 'c'at - highlight first letter
+    imageUrl: '/assets/images/words/cat.png',
+    description: 'A fluffy cat',
+    highlightPositions: [0]
   },
   'd': {
     letter: 'd',
     word: 'dog',
-    imageUrl: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&h=300&fit=crop&crop=center',
-    description: 'A happy dog with floppy ears',
-    highlightPositions: [0] // 'd'og - highlight first letter
+    imageUrl: '/assets/images/words/dog.png',
+    description: 'A happy dog',
+    highlightPositions: [0]
   },
   'e': {
     letter: 'e',
-    word: 'elephant',
-    imageUrl: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=300&h=300&fit=crop&crop=center',
-    description: 'A gentle elephant with big ears',
-    highlightPositions: [0] // 'e'lephant - highlight first letter
+    word: 'egg',
+    imageUrl: '/assets/images/words/egg.png',
+    description: 'A cracking egg',
+    highlightPositions: [0]
   },
   'f': {
     letter: 'f',
     word: 'fish',
-    imageUrl: 'https://images.unsplash.com/photo-1517512147212-0a357e38c9ff?w=300&h=300&fit=crop&crop=center',
-    description: 'A colorful fish swimming underwater',
-    highlightPositions: [0] // 'f'ish - highlight first letter
+    imageUrl: '/assets/images/words/fish.png',
+    description: 'A colorful fish',
+    highlightPositions: [0]
   },
   'g': {
     letter: 'g',
-    word: 'giraffe',
-    imageUrl: 'https://images.unsplash.com/photo-1534619170225-5d4c50f02f0a?w=300&h=300&fit=crop&crop=center',
-    description: 'A tall giraffe with spotted pattern',
-    highlightPositions: [0] // 'g'iraffe - highlight first letter
+    word: 'goat',
+    imageUrl: '/assets/images/words/goat.png',
+    description: 'A farm goat',
+    highlightPositions: [0]
   },
   'h': {
     letter: 'h',
-    word: 'house',
-    imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=300&h=300&fit=crop&crop=center',
-    description: 'A cozy house with a chimney',
-    highlightPositions: [0] // 'h'ouse - highlight first letter
+    word: 'hat',
+    imageUrl: '/assets/images/words/hat.png',
+    description: 'A sun hat',
+    highlightPositions: [0]
   },
   'j': {
     letter: 'j',
-    word: 'jellyfish',
-    imageUrl: 'https://images.unsplash.com/photo-1568777037516-99552d2df8b4?w=300&h=300&fit=crop&crop=center',
-    description: 'A glowing jellyfish in blue water',
-    highlightPositions: [0] // 'j'ellyfish - highlight first letter
+    word: 'jam',
+    imageUrl: '/assets/images/words/jam.png',
+    description: 'A jar of jam',
+    highlightPositions: [0]
   },
   'k': {
     letter: 'k',
     word: 'kite',
-    imageUrl: 'https://images.unsplash.com/photo-1583336663277-620dc1996580?w=300&h=300&fit=crop&crop=center',
-    description: 'A colorful kite flying in the sky',
-    highlightPositions: [0] // 'k'ite - highlight first letter
+    imageUrl: '/assets/images/words/kite.png',
+    description: 'A flying kite',
+    highlightPositions: [0]
   },
   'l': {
     letter: 'l',
-    word: 'lion',
-    imageUrl: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=300&h=300&fit=crop&crop=center',
-    description: 'A majestic lion with a mane',
-    highlightPositions: [0] // 'l'ion - highlight first letter
+    word: 'leg',
+    imageUrl: '/assets/images/words/leg.png',
+    description: 'A leg',
+    highlightPositions: [0]
   },
   'm': {
     letter: 'm',
-    word: 'monkey',
-    imageUrl: 'https://images.unsplash.com/photo-1552728089-57b28c1d685d?w=300&h=300&fit=crop&crop=center',
-    description: 'A playful monkey in a tree',
-    highlightPositions: [0] // 'm'onkey - highlight first letter
+    word: 'map',
+    imageUrl: '/assets/images/words/map.png',
+    description: 'A treasure map',
+    highlightPositions: [0]
   },
   'o': {
     letter: 'o',
     word: 'octopus',
-    imageUrl: 'https://images.unsplash.com/photo-1535591273668-57809d7928f4?w=300&h=300&fit=crop&crop=center',
-    description: 'An octopus with eight wiggly arms',
-    highlightPositions: [0] // 'o'ctopus - highlight first letter
+    imageUrl: '/assets/images/words/octopus.png',
+    description: 'An octopus',
+    highlightPositions: [0]
   },
   'q': {
     letter: 'q',
     word: 'queen',
-    imageUrl: 'https://images.unsplash.com/photo-1511882150382-421056c89033?w=300&h=300&fit=crop&crop=center',
-    description: 'A queen with a golden crown',
-    highlightPositions: [0] // 'q'ueen - highlight first letter
+    imageUrl: '/assets/images/words/queen.png',
+    description: 'A queen',
+    highlightPositions: [0]
   },
   'r': {
     letter: 'r',
-    word: 'rabbit',
-    imageUrl: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=300&h=300&fit=crop&crop=center',
-    description: 'A fluffy rabbit with long ears',
-    highlightPositions: [0] // 'r'abbit - highlight first letter
+    word: 'rat',
+    imageUrl: '/assets/images/words/rat.png',
+    description: 'A fast rat',
+    highlightPositions: [0]
   },
   'u': {
     letter: 'u',
     word: 'umbrella',
-    imageUrl: 'https://images.unsplash.com/photo-1596873800509-8f001d6e928b?w=300&h=300&fit=crop&crop=center',
-    description: 'A rainbow umbrella keeping dry',
-    highlightPositions: [0] // 'u'mbrella - highlight first letter
+    imageUrl: '/assets/images/words/umbrella.png',
+    description: 'A rain umbrella',
+    highlightPositions: [0]
   },
   'v': {
     letter: 'v',
-    word: 'violin',
-    imageUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&h=300&fit=crop&crop=center',
-    description: 'A wooden violin with strings',
-    highlightPositions: [0] // 'v'iolin - highlight first letter
+    word: 'van',
+    imageUrl: '/assets/images/words/van.png',
+    description: 'A delivery van',
+    highlightPositions: [0]
   },
   'w': {
     letter: 'w',
-    word: 'whale',
-    imageUrl: 'https://images.unsplash.com/photo-1563904094685-9963e4f0c1ce?w=300&h=300&fit=crop&crop=center',
-    description: 'A huge whale swimming in ocean',
-    highlightPositions: [0] // 'w'hale - highlight first letter
+    word: 'web',
+    imageUrl: '/assets/images/words/web.png',
+    description: 'A spider web',
+    highlightPositions: [0]
   },
   'x': {
     letter: 'x',
-    word: 'xylophone',
-    imageUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&h=300&fit=crop&crop=center',
-    description: 'A colorful xylophone with bars',
-    highlightPositions: [0] // 'x'ylophone - highlight first letter
+    word: 'box',
+    imageUrl: '/assets/images/words/box.png',
+    description: 'A cardboard box',
+    highlightPositions: [2]
   },
   'y': {
     letter: 'y',
-    word: 'yacht',
-    imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=300&fit=crop&crop=center',
-    description: 'A sailing yacht on blue water',
-    highlightPositions: [0] // 'y'acht - highlight first letter
+    word: 'yogurt',
+    imageUrl: '/assets/images/words/yogurt.png',
+    description: 'A cup of yogurt',
+    highlightPositions: [0]
   },
   'z': {
     letter: 'z',
-    word: 'zebra',
-    imageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=300&h=300&fit=crop&crop=center',
-    description: 'A zebra with black and white stripes',
-    highlightPositions: [0] // 'z'ebra - highlight first letter
+    word: 'zip',
+    imageUrl: '/assets/images/words/zip.png',
+    description: 'A zipper',
+    highlightPositions: [0]
   }
 };
 
@@ -214,6 +214,14 @@ export const highlightWord = (word: string, positions: number[]): string => {
  * Uses the ARASAAC symbols downloaded to /public/assets/images/words/
  */
 export const getWordImage = (word: string): string => {
+    const lowerWord = word.toLowerCase().trim();
+    
+    // EXCLUDE TRIGRAPH EXAMPLES (User Request)
+    const excluded = ['high', 'ear', 'pure', 'hair', 'air', 'hear'];
+    if (excluded.includes(lowerWord)) {
+        return ''; 
+    }
+
     // Return relative path from public folder
-    return `/assets/images/words/${word.toLowerCase()}.png`;
+    return `/assets/images/words/${lowerWord}.png`;
 };

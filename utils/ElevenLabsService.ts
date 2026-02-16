@@ -6,8 +6,9 @@ import { LETTER_IMAGES } from './letterImages';
 import { PiperService } from './PiperService';
 
 const API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
-const VOICE_ID = 'hpp4J3VqNfWAUOO0d1Us'; // Updated to user's preferred voice
-const MODEL_ID = 'eleven_flash_v2_5'; // Faster model, adequate for words
+const VOICE_ID = 'hpp4J3VqNfWAUOO0d1Us';
+const MODEL_ID = 'eleven_flash_v2_5';
+const USE_PIPER_PRIMARY = true; // Still use Piper for fallback if needed
 
 // LOCKED voice settings for maximum consistency across all API calls
 const VOICE_SETTINGS_LOCKED = {
@@ -17,16 +18,20 @@ const VOICE_SETTINGS_LOCKED = {
     use_speaker_boost: true
 };
 
-// Feature flag: Use Piper offline TTS as primary (recommended for phonics)
-const USE_PIPER_PRIMARY = true;
-
 export class ElevenLabsService {
-  private static client = new ElevenLabsClient({ apiKey: API_KEY });
+  private static client: ElevenLabsClient | null = null;
   private static currentAudio: HTMLAudioElement | null = null;
-  private static audioContext: AudioContext | null = null;
+
+  static stop() {
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.currentAudio = null;
+    }
+    PiperService.stop();
+  }
 
   /**
-   * Play text using TTS with Smart Caching.
    * Priority: 
    * 1) Static Assets (phonemes/digraphs)
    * 2) High-Quality Phonics Audio (pre-downloaded words)
@@ -66,7 +71,6 @@ export class ElevenLabsService {
       }
 
       // 2. TRY PIPER OFFLINE TTS (if enabled)
-      // This provides consistent, offline neural TTS for blended words
       if (USE_PIPER_PRIMARY) {
           try {
               console.log(`[TTS] Trying Piper offline TTS for: "${text}"`);
@@ -159,7 +163,12 @@ export class ElevenLabsService {
               const filename = data.trigger;
               const extension = filename.includes('.') ? '' : '.mp3';
               // Use encodeURI to handle spaces and special characters in paths
-              const fullUrl = encodeURI(`/assets/audio/phonemes/${filename}${extension}`);
+              let fullUrl = '';
+              if (filename.startsWith('/')) {
+                   fullUrl = encodeURI(`${filename}${extension}`);
+              } else {
+                   fullUrl = encodeURI(`/assets/audio/phonemes/${filename}${extension}`);
+              }
               urls.push(fullUrl);
           }
       });
@@ -169,19 +178,12 @@ export class ElevenLabsService {
           urls.push(`/assets/images/words/${word.toLowerCase()}.png`);
       });
 
-      // 4. Curriculum sorted audio
-      const baseCurr = '/assets/audio/curriculum_sorted/';
-      const levels = [
-          'Level 1 - Golden Letters (SATPIN)',
-          'Level 2 - The Alphabet (CVC)',
-          'Level 3 - Digraphs',
-          'Level 4 - Vowel Teams',
-          'Level 5 - Other Sounds'
-      ];
-      
-      // 5. External letter images (Fallbacks)
+      // 4. Curriculum sorted audio (optional, mostly covered by phonemes)
+      // Skipped for now as most are mapped in phoneticMap
+
+      // 5. Letter images (Curriculum & Failbacks)
       Object.values(LETTER_IMAGES).forEach(item => {
-          if (item.imageUrl.startsWith('http')) {
+          if (item.imageUrl) {
               urls.push(item.imageUrl);
           }
       });
@@ -254,134 +256,39 @@ export class ElevenLabsService {
               console.log(`[ElevenLabs] Playing from Cache: "${text}"`);
           }
 
-          const url = URL.createObjectURL(blob);
-          const audio = new Audio(url);
+          const audioUrl = URL.createObjectURL(blob);
+          const audio = new Audio(audioUrl);
           this.currentAudio = audio;
-          
-          // Apply Rate (Client-side)
-          if (options?.rate) {
-              audio.playbackRate = options.rate;
-          }
 
-          // Simulate Word Boundaries
-          if (options?.onBoundary) {
-              audio.ontimeupdate = () => {
-                  const duration = audio.duration;
-                  if (duration > 0) {
-                      const limit = text.length;
-                      const progress = audio.currentTime / duration;
-                      const offset = Math.floor(progress * limit);
-                      options.onBoundary?.({ textOffset: offset });
-                  }
-              };
-          }
+          if (options?.rate) audio.playbackRate = options.rate;
 
           audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
               options?.onComplete?.();
               this.currentAudio = null;
           };
-          
+
+          audio.onerror = (e) => {
+              console.error("[ElevenLabs] Playback error", e);
+              this.fallbackSpeak(text, options);
+          };
+
           await audio.play();
 
-      } catch (e) {
-          console.error("ElevenLabs TTS Failed:", e);
+      } catch (error) {
+          console.error("[ElevenLabs] Error:", error);
           this.fallbackSpeak(text, options);
       }
   }
 
-  /**
-   * Fetches audio blob directly (for pre-warming).
-   * Now uses LOCKED voice settings for consistency.
-   */
-  static async fetchAudioBlob(text: string): Promise<Blob | null> {
-      if (!API_KEY) return null;
-      try {
-             const url = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream`;
-             
-             const response = await fetch(url, {
-                 method: 'POST',
-                 headers: {
-                     'xi-api-key': API_KEY,
-                     'Content-Type': 'application/json'
-                 },
-                 body: JSON.stringify({
-                     text: text,
-                     model_id: MODEL_ID,
-                     voice_settings: VOICE_SETTINGS_LOCKED  // Use locked settings
-                 })
-             });
-
-             if (!response.ok) {
-                 console.error(`[ElevenLabs] Fetch Error: ${response.status}`);
-                 return null;
-             }
-
-             return await response.blob();
-      } catch (e) {
-          console.error("[ElevenLabs] Fetch failed", e);
-          return null;
-      }
-  }
-
-  static stop() {
-      if (this.currentAudio) {
-          this.currentAudio.pause();
+  private static fallbackSpeak(text: string, options?: { onComplete?: () => void }) {
+      console.warn("[TTS] Using Browser SpeechSynthesis Fallback");
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.onend = () => {
+          options?.onComplete?.();
           this.currentAudio = null;
-      }
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-  }
-
-  private static fallbackSpeak(text: string, options?: { onBoundary?: (event: any) => void, onComplete?: () => void }) {
-      if (!window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      
-      const u = new SpeechSynthesisUtterance(text);
-      
-      // Try to find a consistent female voice for fallback
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => 
-        (v.name.includes('Female') || v.name.includes('Google UK English Female') || v.name.includes('Microsoft Zira')) && 
-        v.lang.startsWith('en')
-      ) || voices.find(v => v.lang.startsWith('en'));
-
-      if (preferredVoice) u.voice = preferredVoice;
-      
-      u.rate = 0.85;
-      u.pitch = 1.1; // Slightly higher/playful for kids
-      
-      if (options?.onComplete) u.onend = options.onComplete;
-      window.speechSynthesis.speak(u);
-  }
-
-  /**
-   * Transcribe audio (ASR)
-   * Uses browser native Web Speech API since ElevenLabs is TTS-focused.
-   */
-  static async transcribeFromMic(onRecognized: (text: string) => void): Promise<any> {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-          alert("Browser does not support Speech Recognition.");
-          return null;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event: any) => {
-          const last = event.results.length - 1;
-          const text = event.results[last][0].transcript;
-          console.log("Recognized:", text);
-          onRecognized(text);
       };
-
-      recognition.start();
-      return recognition;
-  }
-
-  static async transcribe(audioBlob: Blob): Promise<string> {
-      console.warn("File transcription not supported by ElevenLabs/Browser directly.");
-      return "Transcription unavailable (Browser-only mode)";
+      window.speechSynthesis.speak(utterance);
   }
 }

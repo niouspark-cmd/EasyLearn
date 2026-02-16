@@ -1,21 +1,6 @@
-const CACHE_NAME = 'adesua-offline-v1';
-
-// We'll cache these on installation
-// For the big audio/image folders, we'll cache them as they are fetched
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.ico',
-];
+const CACHE_NAME = 'adesua-offline-v8'; // FORCE UPDATE
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-caching app shell');
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -23,10 +8,10 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+             console.log('[SW] Deleting old cache:', cache);
+             return caches.delete(cache);
           }
         })
       );
@@ -36,7 +21,6 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
@@ -53,13 +37,21 @@ self.addEventListener('fetch', (event) => {
         if (
           networkResponse && 
           networkResponse.status === 200 && 
-          (url.pathname.includes('/assets/') || 
-           url.pathname.includes('/phonics_audio/') ||
-           url.pathname.endsWith('.js') ||
-           url.pathname.endsWith('.css') ||
-           url.pathname.endsWith('.png') ||
-           url.pathname.endsWith('.mp3') ||
-           url.pathname.endsWith('.wav'))
+          (
+            // Internal App Assets
+            url.pathname.includes('/assets/') || 
+            url.pathname.includes('/phonics_audio/') ||
+            url.pathname.endsWith('.js') ||
+            url.pathname.endsWith('.css') ||
+            // Files
+            url.pathname.endsWith('.png') ||
+            url.pathname.endsWith('.mp3') ||
+            url.pathname.endsWith('.wav') ||
+            // External Image Services (Pexels, Unsplash, etc.)
+            url.hostname.includes('pexels.com') ||
+            url.hostname.includes('unsplash.com') ||
+            networkResponse.headers.get('content-type')?.includes('image/')
+          )
         ) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -68,8 +60,7 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // If offline and not in cache, we're stuck
-        // But for things like /dashboard, we want to return index.html
+        // If offline and not in cache, fallback for navigation
         if (event.request.mode === 'navigate') {
           return caches.match('/');
         }
