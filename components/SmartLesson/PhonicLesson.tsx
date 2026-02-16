@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Volume2, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Volume2, CheckCircle, ArrowRight, ArrowLeft, XCircle, Loader2, WifiOff } from 'lucide-react';
 import { ElevenLabsService } from '../../utils/ElevenLabsService';
+import { GroqService } from '../../utils/GroqService';
+import { SpeechRecognitionService } from '../../utils/SpeechRecognitionService';
 import { getLetterImage, getWordImage, highlightWord } from '../../utils/letterImages';
 
 interface PhonicLessonProps {
@@ -17,6 +19,9 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
   const [isRecording, setIsRecording] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
   const [userAudioUrl, setUserAudioUrl] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [transcription, setTranscription] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [masteredItems, setMasteredItems] = useState<string[]>([]);
@@ -33,6 +38,9 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
     setStage('sound');
     setMasteredItems([]);
     setShowCompare(false);
+    
+    // Warm up offline STT
+    SpeechRecognitionService.initialize();
   }, [lessonId]);
 
   const playSound = async () => {
@@ -48,6 +56,36 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
     }
   };
 
+  const checkPronunciation = (target: string, transcription: string): boolean => {
+    const t = target.toLowerCase().trim();
+    const r = transcription.toLowerCase().trim().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
+    
+    if (!r) return false;
+    
+    // 1. Literal Check
+    if (r.includes(t)) return true;
+    
+    // 2. Fuzzy Phonetic Check (Common Whisper mis-transcriptions for children)
+    const phonemeMap: Record<string, string[]> = {
+        's': ['s', 'ess', 'sss', 'snake', 'sea'],
+        'a': ['a', 'ah', 'apple', 'at'],
+        't': ['t', 'tuh', 'tea', 'tent', 'to'],
+        'p': ['p', 'puh', 'pig', 'pea'],
+        'i': ['i', 'ih', 'eye', 'igloo'],
+        'n': ['n', 'nnn', 'en', 'nest'],
+        'igh': ['i', 'eye', 'high', 'night', 'light'],
+        'air': ['air', 'hair', 'ear', 'bear'],
+        'ear': ['ear', 'hear', 'here', 'near'],
+        'ure': ['ur', 'pure', 'sure', 'cure']
+    };
+    
+    if (phonemeMap[t]) {
+        return phonemeMap[t].some(p => r.includes(p));
+    }
+    
+    return false;
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -61,11 +99,37 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(audioBlob);
         setUserAudioUrl(url);
-        setShowCompare(true);
+        
+        // Analyze Pronunciation
+        setIsAnalyzing(true);
+        setShowCompare(true); 
+        
+        try {
+            const target = stage === 'sound' ? currentItem.grapheme : currentWord;
+            let transcript = "";
+            
+            console.log("[STT] Attempting offline transcription...");
+            try {
+                transcript = await SpeechRecognitionService.transcribe(audioBlob);
+                console.log("[STT] Offline result:", transcript);
+            } catch (offlineErr) {
+                console.warn("[STT] Offline failed, falling back to Groq:", offlineErr);
+                transcript = await GroqService.transcribeAudio(audioBlob, target);
+            }
+            
+            setTranscription(transcript);
+            const correct = checkPronunciation(target, transcript);
+            setIsCorrect(correct);
+            
+        } catch (err) {
+            console.error("Transcription error:", err);
+        } finally {
+            setIsAnalyzing(false);
+        }
       };
 
       mediaRecorder.start();
@@ -92,6 +156,9 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
   const handleNext = () => {
     setShowCompare(false);
     setUserAudioUrl(null);
+    setIsCorrect(null);
+    setTranscription("");
+    setIsAnalyzing(false);
     
     if (stage === 'sound') {
         setStage('word');
@@ -189,25 +256,72 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
              </button>
         ) : (
              <div className="flex flex-col gap-3 animate-fade-in-up">
+                 {/* Analysis Status */}
+                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-2">
+                    {isAnalyzing ? (
+                        <div className="flex flex-col items-center gap-2 py-2">
+                            <Loader2 className="animate-spin text-[#fb9610]" size={32} />
+                            <p className="text-sm font-bold text-slate-400">Analyzing (Offline)...</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-1">
+                            {isCorrect ? (
+                                <>
+                                    <div className="flex items-center gap-2 text-emerald-500">
+                                        <CheckCircle size={28} fill="currentColor" className="text-white" />
+                                        <span className="text-xl font-black italic">Perfect!</span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 italic">"I heard: {transcription}"</p>
+                                    <div className="flex items-center gap-1 mt-2 px-2 py-0.5 bg-slate-50 rounded-full">
+                                        <WifiOff size={10} className="text-slate-300" />
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Verified Offline</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2 text-rose-500">
+                                        <XCircle size={28} fill="currentColor" className="text-white" />
+                                        <span className="text-xl font-black italic">Almost there...</span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 italic">
+                                        {transcription ? `I heard: "${transcription}"` : "I couldn't quite hear that."}
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    )}
+                 </div>
+
                  <div className="flex gap-2">
                      <button 
                          onClick={playUserAudio}
-                         className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-600 border-b-4 border-slate-200"
+                         className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-600 border-b-4 border-slate-200 active:translate-y-px"
                      >
                          🔊 Your Voice
                      </button>
                      <button 
-                         onClick={() => setShowCompare(false)}
-                         className="flex-1 py-3 bg-white border-2 border-[#fb9610] rounded-xl font-bold text-[#fb9610]"
+                         onClick={() => {
+                             setShowCompare(false);
+                             setIsCorrect(null);
+                             setTranscription("");
+                         }}
+                         className="flex-1 py-3 bg-white border-2 border-[#fb9610] rounded-xl font-bold text-[#fb9610] active:scale-95 transition-all"
                      >
                          Try Again
                      </button>
                  </div>
+                 
                  <button 
                      onClick={handleNext}
-                     className="w-full py-3 bg-emerald-500 text-white rounded-xl font-black text-lg shadow-md border-b-4 border-emerald-700 animate-bounce"
+                     className={`
+                        w-full py-3 rounded-xl font-black text-lg shadow-md border-b-4 transition-all
+                        ${isCorrect 
+                            ? 'bg-emerald-500 text-white border-emerald-700 hover:brightness-110 active:translate-y-1' 
+                            : 'bg-slate-200 text-slate-400 border-slate-300 hover:bg-[#fb9610] hover:text-white hover:border-orange-700'
+                        }
+                     `}
                  >
-                     Great! Next ➜
+                     {isCorrect ? 'Great! Next ➜' : 'Skip to Next ➜'}
                  </button>
              </div>
         )}

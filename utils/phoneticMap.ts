@@ -57,11 +57,11 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   // --- Level 4: Vowel Teams ---
   "ai": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-7-a-long.mp3", "example": "rain", "ipa": "/eɪ/" }, 
   "oa": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-3-o-long.mp3", "example": "boat", "ipa": "/oʊ/" },
-  "ie": { "trigger": BASE_PATH + "Level 1 - Golden Letters (SATPIN)/letter i.wav", "example": "pie", "ipa": "/aɪ/" }, 
+  "ie": { "trigger": "/assets/audio/phonemes/ie.wav?v=10", "example": "pie", "ipa": "/aɪ/" }, 
   // wait, let's map what we have in "all sounds raw here". 
   // We have: btalpha-7-a-long (ai), btalpha-3-o-long (oa), btalpha-2-e-long (ee), btalpha-10-u-long (ue)
   "ee": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-2-e-long.mp3", "example": "tree", "ipa": "/iː/" },
-  "or": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-6-o-dotted.mp3", "example": "corn", "ipa": "/ɔː/" }, // Sharing with oo/aw sound
+  "or": { "trigger": "/assets/audio/phonemes/or.wav?v=10", "example": "corn", "ipa": "/ɔː/" }, // Using a clearer 'or' sound candidate
 
   // --- Level 5: Other Sounds (Vowel Pairs / Diphthongs) ---
   "ou": { "trigger": BASE_PATH + "Level 5 - Other Sounds/alphasounds-ou.mp3", "example": "cloud", "ipa": "/aʊ/" },
@@ -87,7 +87,7 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
 
   // Additional Phase 3/5 Sounds
   "zh": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-15-zh.mp3", "example": "measure", "ipa": "/ʒ/" },
-  "aw": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "saw", "ipa": "/ɔː/" },
+  "aw": { "trigger": "/assets/audio/curriculum_sorted/Level 5 - Other Sounds/aw-au.wav?v=10", "example": "saw", "ipa": "/ɔː/" },
   "ur": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-13-u-dotted.mp3", "example": "burn", "ipa": "/ɜː/" },
   
   // Phase 5 New Graphemes (Mapped to existing sounds)
@@ -98,7 +98,7 @@ const PHONETIC_DICTIONARY: Record<string, PhonemeData> = {
   "ph": { "trigger": BASE_PATH + "Level 2 - The Alphabet (CVC)/letter f.wav", "example": "photo", "ipa": "/f/" },
   "ew": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-10-u-long.mp3", "example": "new", "ipa": "/juː/" },
   "oe": { "trigger": BASE_PATH + "Level 4 - Vowel Teams/btalpha-3-o-long.mp3", "example": "toe", "ipa": "/oʊ/" },
-  "au": { "trigger": BASE_PATH + "Level 5 - Other Sounds/btalpha-6-o-dotted.mp3", "example": "paul", "ipa": "/ɔː/" }, // Same as aw
+  "au": { "trigger": "/assets/audio/curriculum_sorted/Level 5 - Other Sounds/aw-au.wav?v=10", "example": "paul", "ipa": "/ɔː/" }, // Same as aw
 
   // Trigraphs (Level 7) - Specific mappings
   "air": { "trigger": "/phonics_audio/air.mp3?v=9", "example": "hair", "ipa": "/eə/" },

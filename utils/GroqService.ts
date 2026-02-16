@@ -84,7 +84,7 @@ export class GroqService {
      * Transcribes audio using Groq Whisper (Speech-to-Text).
      * Used to verify pronunciation.
      */
-    static async transcribeAudio(audioBlob: Blob): Promise<string> {
+    static async transcribeAudio(audioBlob: Blob, target?: string): Promise<string> {
         if (!audioBlob) return "";
 
         try {
@@ -96,7 +96,11 @@ export class GroqService {
             formData.append('model', 'whisper-large-v3'); 
             
             // optimize prompt for phonics
-            formData.append('prompt', 'Phonetic sounds: Sss, Ah, Tuh, Puh, Ih, Nnn. Letters: S, A, T, P, I, N. One word.');
+            const contextPrompt = target 
+                ? `The user is saying the phonetic sound for "${target}". Phonics context: Sss, Ah, Tuh, Puh. Letter names: A, B, C.`
+                : 'Phonetic sounds: Sss, Ah, Tuh, Puh, Ih, Nnn. Letters: S, A, T, P, I, N. One word.';
+                
+            formData.append('prompt', contextPrompt);
             formData.append('response_format', 'json');
 
             const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
