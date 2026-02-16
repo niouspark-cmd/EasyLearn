@@ -28,7 +28,12 @@ export class ElevenLabsService {
       this.currentAudio.currentTime = 0;
       this.currentAudio = null;
     }
+    // Stop offline Piper
     PiperService.stop();
+    // Stop native browser speech
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
   }
 
   /**
@@ -103,6 +108,12 @@ export class ElevenLabsService {
     };
 
     try {
+        // Stop any previous local playback before starting new one
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio = null;
+        }
+
         // 1. Try Cache First
         const encodedPath = encodeURI(assetPath);
         let audioUrl = encodedPath;
@@ -130,12 +141,15 @@ export class ElevenLabsService {
             if (audioUrl.startsWith('blob:')) URL.revokeObjectURL(audioUrl);
             console.log(`[TTS] Local Playback Ended: "${text}"`);
             options?.onComplete?.();
-            this.currentAudio = null;
+            if (this.currentAudio === audio) this.currentAudio = null;
         };
         
         audio.onerror = async (e) => {
             if (audioUrl.startsWith('blob:')) URL.revokeObjectURL(audioUrl);
-            await triggerFallback(e);
+            // Only trigger fallback if this is still the active audio
+            if (this.currentAudio === audio) {
+                await triggerFallback(e);
+            }
         };
 
         await audio.play();

@@ -24,6 +24,7 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
   const [transcription, setTranscription] = useState("");
   const [analysisMode, setAnalysisMode] = useState<'online' | 'offline' | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [masteredItems, setMasteredItems] = useState<string[]>([]);
 
@@ -42,6 +43,11 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
     
     // Warm up offline STT
     SpeechRecognitionService.initialize();
+
+    return () => {
+      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
+      ElevenLabsService.stop();
+    };
   }, [lessonId]);
 
   const playSound = async () => {
@@ -179,7 +185,11 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
     if (stage === 'sound') {
         setStage('word');
         // Auto-play the word when switching to word mode
-        setTimeout(() => ElevenLabsService.play(currentWord), 500);
+        if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
+        playTimeoutRef.current = setTimeout(() => {
+            ElevenLabsService.play(currentWord);
+            playTimeoutRef.current = null;
+        }, 500);
     } else {
         if (currentIndex < data.length - 1) {
             setCurrentIndex(prev => prev + 1);
