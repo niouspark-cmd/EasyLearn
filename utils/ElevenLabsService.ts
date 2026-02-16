@@ -37,16 +37,24 @@ export class ElevenLabsService {
   }
 
   /**
+   * MASTER AUDIO GATE - The single entry point for all app audio.
    * Priority: 
-   * 1) Static Assets (phonemes/digraphs)
-   * 2) High-Quality Phonics Audio (pre-downloaded words)
-   * 3) Piper Offline TTS
-   * 4) ElevenLabs API
+   * 1) Static Assets (Level 1-2 Human Vocals)
+   * 2) High-Quality Phonics Audio (Pre-recorded Dictionary Words)
+   * 3) Piper Offline TTS (Neural Offline Fallback - Premium Feel)
+   * 4) ElevenLabs API (Neural Online Fallback - State of the Art)
+   * 
+   * NOTE: Native Browser SpeechSynthesis is DISABLED to ensure professional consistency.
    */
   static async play(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
       
+      // 1. CLEAR THE STAGE - Stop every possible audio source
       this.stop();
+      
       const lowerText = text.toLowerCase().trim();
+      if (!lowerText) return;
+
+      console.log(`[MasterGate] Playing: "${lowerText}"`);
 
       // 0. CHECK STATIC PHONEMES (s, a, t, etc.)
       if (STATIC_ASSETS.includes(lowerText)) {
@@ -75,24 +83,35 @@ export class ElevenLabsService {
           return;
       }
 
-      // 2. TRY PIPER OFFLINE TTS (if enabled)
+      // 2. TRY PIPER OFFLINE TTS (Neural Offline AI)
+      // This is our primary 'human-like' fallback when offline
       if (USE_PIPER_PRIMARY) {
           try {
-              console.log(`[TTS] Trying Piper offline TTS for: "${text}"`);
+              console.log(`[TTS] Using Piper Neural Offline: "${text}"`);
               await PiperService.play(text, { 
-                  speed: options?.rate || 0.9, // Slightly slower for phonics
+                  speed: options?.rate || 0.9,
                   onComplete: options?.onComplete 
               });
-              console.log(`[TTS] Piper playback complete: "${text}"`);
               return;
           } catch (piperError) {
-              console.warn(`[TTS] Piper failed, falling back to ElevenLabs:`, piperError);
-              // Continue to API fallback
+              console.warn(`[TTS] Piper Offline failed, checking for online connectivity...`, piperError);
           }
       }
 
-      // 3. FALLBACK: ElevenLabs API with LOCKED settings
-      await this.playFromApi(text, options);
+      // 3. TRY ELEVENLABS API (Only if online)
+      if (navigator.onLine && API_KEY) {
+          try {
+              await this.playFromApi(text, options);
+              return;
+          } catch (apiError) {
+              console.error(`[TTS] ElevenLabs API failed:`, apiError);
+          }
+      }
+
+      // NO VOICES FOUND? 
+      // We explicitly skip the native browser "robot" voice to maintain brand quality.
+      console.warn(`[MasterGate] No premium audio available for "${text}". Native fallback suppressed for quality.`);
+      options?.onComplete?.();
   }
 
   /**
@@ -207,21 +226,18 @@ export class ElevenLabsService {
   }
 
   /**
-   * Fallback play when static assets fail
+   * Universal Fallback - Locked to Piper for quality consistency
    */
   private static async fallbackPlay(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
-      if (USE_PIPER_PRIMARY) {
-          try {
-              await PiperService.play(text, { 
-                  speed: options?.rate || 0.9,
-                  onComplete: options?.onComplete 
-              });
-              return;
-          } catch {
-              // Fall through to API
-          }
+      try {
+          await PiperService.play(text, { 
+              speed: options?.rate || 0.9,
+              onComplete: options?.onComplete 
+          });
+      } catch {
+          console.error(`[MasterGate] All audio fallbacks exhausted for "${text}"`);
+          options?.onComplete?.();
       }
-      await this.playFromApi(text, options);
   }
 
   private static async playFromApi(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }) {
@@ -296,13 +312,7 @@ export class ElevenLabsService {
   }
 
   private static fallbackSpeak(text: string, options?: { onComplete?: () => void }) {
-      console.warn("[TTS] Using Browser SpeechSynthesis Fallback");
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.onend = () => {
-          options?.onComplete?.();
-          this.currentAudio = null;
-      };
-      window.speechSynthesis.speak(utterance);
+      console.warn("[MasterGate] Suppression: Browser Native TTS blocked for quality control.");
+      options?.onComplete?.();
   }
 }
