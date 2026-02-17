@@ -11,6 +11,9 @@ export interface CurriculumLevel {
   subtitle: string;
   type: 'phonic' | 'blending' | 'magic-e' | 'tricky-words' | 'sentences';
   data?: LessonItem[];
+  blend2?: string[];
+  blend3?: string[];
+  blend4?: string[];
   color?: string;
   icon?: string;
 }
@@ -18,127 +21,130 @@ export interface CurriculumLevel {
 export const CURRICULUM_DATA: CurriculumLevel[] = [
   {
     id: 1,
-    title: 'Level 1: Golden Letters (SATPIN)',
-    subtitle: 'The first 6 sounds to start building words.',
+    title: 'Group 1: s a t p i n',
+    subtitle: 'The first 6 sounds for your child.',
     type: 'phonic',
     color: '#fb9610',
     data: [
-      { grapheme: 's', words: ['sat', 'sit', 'sun', 'spot', 'snake', 'sand'] },
-      { grapheme: 'a', words: ['ant', 'apple', 'at', 'axe', 'arrow', 'anchor'] },
-      { grapheme: 't', words: ['tap', 'tin', 'ten', 'top', 'tent', 'turtle'] },
-      { grapheme: 'p', words: ['pan', 'pig', 'pot', 'pen', 'pin', 'pink'] },
-      { grapheme: 'i', words: ['ink', 'in', 'igloo', 'insect', 'itch'] },
-      { grapheme: 'n', words: ['net', 'nut', 'nest', 'nap', 'neck', 'nose'] }
-    ]
+      { grapheme: 's', words: ['sat', 'sit', 'sap', 'sip', 'spin', 'sin'] },
+      { grapheme: 'a', words: ['ant', 'at', 'an', 'as', 'asp'] },
+      { grapheme: 't', words: ['tap', 'tin', 'tip', 'tan', 'pat'] },
+      { grapheme: 'p', words: ['pan', 'pin', 'pat', 'pit', 'pip', 'tap'] },
+      { grapheme: 'i', words: ['in', 'is', 'it', 'its', 'sit'] },
+      { grapheme: 'n', words: ['nap', 'nip', 'nit', 'nan', 'snap', 'pan'] }
+    ],
+    blend2: ['is', 'at', 'in', 'as', 'an', 'it'],
+    blend3: ['sat', 'nit', 'pin', 'tin', 'tap', 'sin', 'pit', 'pan'],
+    blend4: ['spin', 'snap', 'spit', 'pans', 'pins', 'pants', 'ants', 'naps', 'pits', 'tips']
   },
   {
     id: 2,
-    title: 'Level 2: The Alphabet (CVC)',
-    subtitle: 'Completing the single sounds.',
+    title: 'Group 2: Alphabet Sounds',
+    subtitle: 'Completing the single letter sounds.',
     type: 'phonic',
     color: '#022d62',
     data: [
-      { grapheme: 'c', words: ['cat', 'cup', 'cot', 'cap', 'cake', 'kite'] },
-      { grapheme: 'k', words: ['king', 'kick', 'kite', 'kitten'] },
-      { grapheme: 'e', words: ['egg', 'elf', 'elbow', 'envelope', 'exit'] },
+      { grapheme: 'c', words: ['cat', 'cup', 'cot', 'cap', 'can'] },
+      { grapheme: 'k', words: ['kit', 'kid', 'kin', 'kick'] },
+      { grapheme: 'e', words: ['egg', 'elf', 'elbow', 'end', 'exit'] },
       { grapheme: 'h', words: ['hat', 'hen', 'hop', 'hut', 'hand'] },
-      { grapheme: 'r', words: ['rat', 'run', 'rug', 'red', 'rabbit'] },
-      { grapheme: 'm', words: ['mat', 'man', 'mug', 'map', 'milk'] },
+      { grapheme: 'r', words: ['rat', 'run', 'rug', 'red', 'rip'] },
+      { grapheme: 'm', words: ['mat', 'man', 'mug', 'map', 'mom'] },
       { grapheme: 'd', words: ['dog', 'dad', 'dip', 'duck', 'drum'] },
-      { grapheme: 'g', words: ['gap', 'gun', 'goat', 'gate', 'girl'] },
-      { grapheme: 'o', words: ['on', 'off', 'octopus', 'orange', 'ostrich'] },
-      { grapheme: 'u', words: ['up', 'umbrella', 'under', 'uncle', 'unhappy'] },
-      { grapheme: 'l', words: ['log', 'leg', 'lip', 'leaf', 'lemon'] },
-      { grapheme: 'f', words: ['fan', 'fig', 'fish', 'fox', 'frog'] },
+      { grapheme: 'g', words: ['gap', 'gum', 'got', 'gas', 'pig'] },
+      { grapheme: 'o', words: ['on', 'off', 'pot', 'top', 'hot'] },
+      { grapheme: 'u', words: ['up', 'sun', 'mud', 'bug', 'run'] },
+      { grapheme: 'l', words: ['log', 'leg', 'lip', 'lap', 'let'] },
+      { grapheme: 'f', words: ['fan', 'fig', 'fit', 'fog', 'fun'] },
       { grapheme: 'b', words: ['bat', 'bag', 'bed', 'bus', 'box'] },
-      { grapheme: 'j', words: ['jam', 'jet', 'jug', 'jelly', 'jump'] },
-      { grapheme: 'z', words: ['zip', 'zoo', 'zebra', 'zigzag', 'buzz'] },
-      { grapheme: 'w', words: ['web', 'wind', 'wig', 'wall', 'watch'] },
-      { grapheme: 'v', words: ['van', 'vest', 'vet', 'vase', 'violin'] },
-      { grapheme: 'y', words: ['yak', 'yam', 'yellow', 'yo-yo', 'yogurt'] },
-      { grapheme: 'x', words: ['box', 'fox', 'six', 'axe', 'mix'] }
+      { grapheme: 'j', words: ['jam', 'jet', 'jug', 'job', 'jog'] },
+      { grapheme: 'z', words: ['zip', 'zag', 'zig', 'fuzz', 'buzz'] },
+      { grapheme: 'w', words: ['web', 'wig', 'wet', 'win', 'wag'] },
+      { grapheme: 'v', words: ['van', 'vet', 'vim', 'vat'] },
+      { grapheme: 'y', words: ['yak', 'yam', 'yes', 'yet', 'yell'] },
+      { grapheme: 'x', words: ['box', 'fox', 'six', 'tax', 'mix'] }
     ]
   },
   {
     id: 3,
-    title: 'Level 3: Digraphs',
+    title: 'Group 3: Digraphs',
     subtitle: 'Two letters, one sound.',
     type: 'phonic',
     color: '#10b981',
     data: [
-      { grapheme: 'sh', words: ['ship', 'shop', 'fish', 'shell', 'sheep'] },
-      { grapheme: 'ch', words: ['chop', 'chin', 'chick', 'chips', 'bench'] },
-      { grapheme: 'th', words: ['thin', 'thick', 'moth', 'cloth', 'thumb'] },
-      { grapheme: 'ng', words: ['ring', 'king', 'lung', 'strong', 'sing'] },
-      { grapheme: 'qu', words: ['queen', 'quick', 'quilt', 'quiz', 'quack'] },
-      { grapheme: 'wh', words: ['wheel', 'when', 'whip', 'white', 'which'] },
-      { grapheme: 'ph', words: ['photo', 'dolphin', 'phone', 'alphabet', 'graph'] }
+      { grapheme: 'sh', words: ['ship', 'shop', 'fish', 'wish', 'dash'] },
+      { grapheme: 'ch', words: ['chop', 'chin', 'chick', 'rich', 'much'] },
+      { grapheme: 'th', words: ['thin', 'moth', 'cloth', 'with', 'bath'] },
+      { grapheme: 'ng', words: ['ring', 'king', 'long', 'song', 'sing'] },
+      { grapheme: 'qu', words: ['quick', 'quit', 'quiz', 'quack'] },
+      { grapheme: 'wh', words: ['when', 'whip', 'which', 'whiz'] },
+      { grapheme: 'ph', words: ['graph', 'dolphin', 'phone', 'alpha'] }
     ]
   },
   {
     id: 4,
-    title: 'Level 4: Vowel Teams',
-    subtitle: 'When two vowels go walking...',
+    title: 'Group 4: Vowel Teams',
+    subtitle: 'Two vowels working together.',
     type: 'phonic',
     color: '#f59e0b',
     data: [
-      { grapheme: 'ai', words: ['rain', 'train', 'snail', 'tail', 'nail'] },
-      { grapheme: 'ay', words: ['day', 'play', 'say', 'way', 'stay'] },
+      { grapheme: 'ai', words: ['rain', 'wait', 'tail', 'nail', 'main'] },
+      { grapheme: 'ay', words: ['day', 'play', 'say', 'may', 'tray'] },
       { grapheme: 'oa', words: ['boat', 'goat', 'coat', 'soap', 'road'] },
-      { grapheme: 'oe', words: ['toe', 'foe', 'potatoes', 'tomatoes'] },
-      { grapheme: 'ie', words: ['pie', 'tie', 'lie', 'flies', 'dried'] },
-      { grapheme: 'ee', words: ['tree', 'bee', 'feet', 'green', 'jeep'] },
-      { grapheme: 'ea', words: ['sea', 'meat', 'read', 'tea', 'eat'] },
-      { grapheme: 'or', words: ['fork', 'corn', 'cork', 'horn', 'storm'] }
+      { grapheme: 'oe', words: ['toe', 'doe', 'hoe', 'joe'] },
+      { grapheme: 'ie', words: ['pie', 'tie', 'lie', 'die'] },
+      { grapheme: 'ee', words: ['tree', 'bee', 'feet', 'meet', 'keep'] },
+      { grapheme: 'ea', words: ['sea', 'meat', 'read', 'tea', 'each'] },
+      { grapheme: 'or', words: ['fork', 'corn', 'born', 'horn', 'sport'] }
     ]
   },
   {
     id: 5,
-    title: 'Level 5: Other Sounds',
-    subtitle: 'More complex vowel sounds.',
+    title: 'Group 5: Special Sounds',
+    subtitle: 'More sounds to learn.',
     type: 'phonic',
     color: '#8b5cf6',
     data: [
-      { grapheme: 'oo', words: ['book', 'cook', 'foot', 'moon', 'spoon'] },
-      { grapheme: 'ou', words: ['cloud', 'mouth', 'mouse', 'house', 'shout'] },
-      { grapheme: 'ow', words: ['cow', 'now', 'how', 'brown', 'down'] },
-      { grapheme: 'oi', words: ['coin', 'boil', 'oil', 'soil', 'point'] },
-      { grapheme: 'oy', words: ['boy', 'toy', 'joy', 'royal', 'enjoy'] },
-      { grapheme: 'ue', words: ['glue', 'blue', 'clue', 'tissue', 'statue'] },
-      { grapheme: 'ew', words: ['new', 'few', 'grew', 'chew', 'flew'] },
-      { grapheme: 'er', words: ['mixer', 'letter', 'hammer', 'ladder', 'supper'] },
-      { grapheme: 'ir', words: ['bird', 'girl', 'shirt', 'skirt', 'first'] },
+      { grapheme: 'oo', words: ['book', 'cook', 'foot', 'look', 'good'] },
+      { grapheme: 'ou', words: ['cloud', 'found', 'round', 'shout', 'mouth'] },
+      { grapheme: 'ow', words: ['cow', 'now', 'how', 'down', 'town'] },
+      { grapheme: 'oi', words: ['coin', 'boil', 'oil', 'soil', 'join'] },
+      { grapheme: 'oy', words: ['boy', 'toy', 'joy', 'enjoy'] },
+      { grapheme: 'ue', words: ['glue', 'blue', 'clue', 'true'] },
+      { grapheme: 'ew', words: ['new', 'few', 'grew', 'flew', 'stew'] },
+      { grapheme: 'er', words: ['mixer', 'letter', 'hammer', 'longer', 'better'] },
+      { grapheme: 'ir', words: ['bird', 'girl', 'shirt', 'skirt', 'third'] },
       { grapheme: 'ur', words: ['burn', 'turn', 'fur', 'hurt', 'surf'] },
-      { grapheme: 'ar', words: ['car', 'park', 'star', 'shark', 'farm'] },
-      { grapheme: 'au', words: ['paul', 'launch', 'haul', 'author', 'august'] },
-      { grapheme: 'aw', words: ['saw', 'paw', 'raw', 'claw', 'jaw'] }
+      { grapheme: 'ar', words: ['car', 'park', 'star', 'farm', 'hard'] },
+      { grapheme: 'au', words: ['haul', 'fault', 'haunt', 'launch'] },
+      { grapheme: 'aw', words: ['saw', 'paw', 'raw', 'claw', 'draw'] }
     ]
   },
   {
     id: 6,
-    title: 'Level 6: Magic E',
-    subtitle: 'The E makes the vowel say its name.',
+    title: 'Group 6: Magic E',
+    subtitle: 'The silent e makes magic.',
     type: 'magic-e',
     color: '#ec4899',
     data: [
       { grapheme: 'a-e', words: ['cake', 'snake', 'game', 'gate', 'lake'] },
-      { grapheme: 'e-e', words: ['eve', 'these', 'complete', 'extreme', 'delete'] },
+      { grapheme: 'e-e', words: ['eve', 'these', 'pete', 'gene'] },
       { grapheme: 'i-e', words: ['bike', 'kite', 'five', 'nine', 'slide'] },
-      { grapheme: 'o-e', words: ['bone', 'rose', 'cone', 'globe', 'rope'] },
-      { grapheme: 'u-e', words: ['cube', 'tube', 'mule', 'fuse', 'huge'] }
+      { grapheme: 'o-e', words: ['bone', 'rose', 'cone', 'home', 'rope'] },
+      { grapheme: 'u-e', words: ['cube', 'tube', 'mule', 'huge', 'rule'] }
     ]
   },
   {
     id: 7,
-    title: 'Level 7: Trigraphs',
+    title: 'Group 7: Trigraphs',
     subtitle: 'Three letters, one sound.',
     type: 'phonic',
     color: '#d946ef',
     data: [
-      { grapheme: 'igh', words: ['high', 'night', 'light', 'bright', 'right'] },
-      { grapheme: 'air', words: ['hair', 'chair', 'pair', 'fair', 'air'] },
-      { grapheme: 'ear', words: ['hear', 'ear', 'dear', 'near', 'year'] },
-      { grapheme: 'ure', words: ['pure', 'sure', 'cure', 'lure', 'manure'] }
+      { grapheme: 'igh', words: ['high', 'night', 'light', 'might', 'sight'] },
+      { grapheme: 'air', words: ['hair', 'fair', 'pair', 'pair', 'air'] },
+      { grapheme: 'ear', words: ['hear', 'ear', 'dear', 'near', 'fear'] },
+      { grapheme: 'ure', words: ['pure', 'sure', 'cure', 'lure'] }
     ]
   },
   {
@@ -148,15 +154,15 @@ export const CURRICULUM_DATA: CurriculumLevel[] = [
     type: 'blending',
     color: '#06b6d4',
     data: [
-      { grapheme: 'st', words: ['stop', 'step', 'star', 'fist', 'nest'] },
-      { grapheme: 'nd', words: ['sand', 'hand', 'band', 'pond', 'wind'] },
-      { grapheme: 'mp', words: ['lamp', 'jump', 'camp', 'pump', 'damp'] },
+      { grapheme: 'st', words: ['stop', 'step', 'star', 'fast', 'best'] },
+      { grapheme: 'nd', words: ['sand', 'hand', 'band', 'pond', 'end'] },
+      { grapheme: 'mp', words: ['lamp', 'jump', 'camp', 'pump', 'dump'] },
       { grapheme: 'nt', words: ['tent', 'ant', 'hunt', 'sent', 'mint'] },
-      { grapheme: 'nk', words: ['pink', 'sink', 'bunk', 'tank', 'wink'] },
-      { grapheme: 'ft', words: ['lift', 'loft', 'soft', 'tuft', 'left'] },
-      { grapheme: 'sk', words: ['skip', 'desk', 'mask', 'tusk', 'ask'] },
-      { grapheme: 'lt', words: ['belt', 'melt', 'tilt', 'felt', 'kilt'] },
-      { grapheme: 'br', words: ['brick', 'brush', 'crab', 'crib', 'trap'] } // Mixing some start blends
+      { grapheme: 'nk', words: ['pink', 'sink', 'bunk', 'tank', 'bank'] },
+      { grapheme: 'ft', words: ['lift', 'loft', 'soft', 'gift', 'left'] },
+      { grapheme: 'sk', words: ['skip', 'desk', 'mask', 'task', 'ask'] },
+      { grapheme: 'lt', words: ['belt', 'melt', 'tilt', 'felt', 'guilt'] },
+      { grapheme: 'br', words: ['brick', 'brush', 'bring', 'brass'] }
     ]
   },
   {

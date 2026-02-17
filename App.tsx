@@ -45,7 +45,7 @@ const App: React.FC = () => {
         <Route path="/register" element={<RegisterPage />} />
         
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<DashboardHome />} />
+          <Route index element={<Navigate to="/dashboard/lab" replace />} />
           <Route path="lab" element={<LabSoundBoardPage />} />
           <Route path="performance" element={<PerformancePage />} />
           <Route path="settings" element={<SettingsPage />} />

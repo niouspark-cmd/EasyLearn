@@ -8,7 +8,7 @@ import { PiperService } from './PiperService';
 const API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
 const VOICE_ID = 'hpp4J3VqNfWAUOO0d1Us';
 const MODEL_ID = 'eleven_flash_v2_5';
-const USE_PIPER_PRIMARY = true; // Still use Piper for fallback if needed
+const USE_PIPER_PRIMARY = false; // Prioritize ElevenLabs API for premium human sound when online
 
 // LOCKED voice settings for maximum consistency across all API calls
 const VOICE_SETTINGS_LOCKED = {
@@ -75,37 +75,35 @@ export class ElevenLabsService {
           return;
       }
 
-      // 1. CHECK HI-QUALITY PHONICS AUDIO (The "Final Level" words)
+      // 1. CHECK HI-QUALITY PHONICS AUDIO (The "Final Level" words - Local First)
       if (PHONICS_WORDS.includes(lowerText)) {
           console.log(`[TTS] High-Quality Phonics Audio match: "${lowerText}"`);
-          const assetPath = `/phonics_audio/${lowerText.replace(/ /g, '_')}.mp3?v=10`;
+          const assetPath = `/phonics_audio/${lowerText.replace(/ /g, '_')}.mp3?v=11`;
           await this.playLocalFile(assetPath, lowerText, options);
           return;
       }
 
-      // 2. TRY PIPER OFFLINE TTS (Neural Offline AI)
-      // This is our primary 'human-like' fallback when offline
-      if (USE_PIPER_PRIMARY) {
-          try {
-              console.log(`[TTS] Using Piper Neural Offline: "${text}"`);
-              await PiperService.play(text, { 
-                  speed: options?.rate || 0.9,
-                  onComplete: options?.onComplete 
-              });
-              return;
-          } catch (piperError) {
-              console.warn(`[TTS] Piper Offline failed, checking for online connectivity...`, piperError);
-          }
-      }
-
-      // 3. TRY ELEVENLABS API (Only if online)
+      // 2. TRY ELEVENLABS API (Premium Online Fallback)
       if (navigator.onLine && API_KEY) {
           try {
+              console.log(`[TTS] Using ElevenLabs Premium API: "${text}"`);
               await this.playFromApi(text, options);
               return;
           } catch (apiError) {
-              console.error(`[TTS] ElevenLabs API failed:`, apiError);
+              console.warn(`[TTS] ElevenLabs API failed, falling back to Piper...`, apiError);
           }
+      }
+
+      // 3. TRY PIPER OFFLINE TTS (Neural Offline Fallback)
+      try {
+          console.log(`[TTS] Using Piper Neural Offline: "${text}"`);
+          await PiperService.play(text, { 
+              speed: options?.rate || 0.9,
+              onComplete: options?.onComplete 
+          });
+          return;
+      } catch (piperError) {
+          console.warn(`[TTS] Piper Offline failed:`, piperError);
       }
 
       // NO VOICES FOUND? 
@@ -230,12 +228,20 @@ export class ElevenLabsService {
    */
   private static async fallbackPlay(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
       try {
+          // 1. Try ElevenLabs API first if online (Premium Redundancy)
+          if (navigator.onLine && API_KEY) {
+              console.log(`[TTS] Local asset failed. Trying ElevenLabs API for: "${text}"`);
+              await this.playFromApi(text, options);
+              return;
+          }
+
+          // 2. Fallback to Piper (Neural Offline)
           await PiperService.play(text, { 
               speed: options?.rate || 0.9,
               onComplete: options?.onComplete 
           });
-      } catch {
-          console.error(`[MasterGate] All audio fallbacks exhausted for "${text}"`);
+      } catch (err) {
+          console.error(`[MasterGate] All audio fallbacks exhausted for "${text}"`, err);
           options?.onComplete?.();
       }
   }
