@@ -78,7 +78,7 @@ export class ElevenLabsService {
       // 1. CHECK HI-QUALITY PHONICS AUDIO (The "Final Level" words - Local First)
       if (PHONICS_WORDS.includes(lowerText)) {
           console.log(`[TTS] High-Quality Phonics Audio match: "${lowerText}"`);
-          const assetPath = `/phonics_audio/${lowerText.replace(/ /g, '_')}.mp3?v=11`;
+          const assetPath = `/phonics_audio/${lowerText.replace(/ /g, '_')}.mp3?v=20`;
           await this.playLocalFile(assetPath, lowerText, options);
           return;
       }

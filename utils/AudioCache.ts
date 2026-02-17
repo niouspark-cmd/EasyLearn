@@ -1,5 +1,5 @@
 export class AudioCache {
-  private static CACHE_NAME = 'adesua-offline-v9'; // FORCE UPDATE
+  private static CACHE_NAME = 'adesua-offline-v10'; // FORCE UPDATE
 
   /**
    * Generates a cache key for text-to-speech audio
