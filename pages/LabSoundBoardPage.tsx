@@ -12,28 +12,28 @@ import { ElevenLabsService } from '../utils/ElevenLabsService';
 const PhonicGridItem: React.FC<{ grapheme: string, dark?: boolean }> = ({ grapheme, dark }) => (
   <button 
     onClick={() => ElevenLabsService.play(grapheme)}
-    className={`aspect-square flex flex-col items-center justify-center gap-1 rounded-xl transition-all active:scale-95 shadow-sm border-2 ${
+    className={`aspect-square flex flex-col items-center justify-center gap-2 rounded-2xl transition-all active:scale-95 shadow-sm border-2 ${
       dark 
         ? 'bg-[#022d62] border-[#022d62] text-white' 
         : 'bg-white border-slate-100 text-[#022d62] hover:border-[#fb9610]'
     }`}
   >
-    {dark ? <Volume2 size={16} /> : <span className="text-lg font-black">{grapheme}</span>}
+    {dark ? <Volume2 size={20} /> : <span className="text-xl font-black">{grapheme}</span>}
   </button>
 );
 
 const WordGridItem: React.FC<{ word: string }> = ({ word }) => (
   <button 
     onClick={() => ElevenLabsService.play(word)}
-    className="aspect-[1.1/1] flex flex-col items-center justify-center gap-1.5 bg-white border-2 border-slate-100 rounded-xl hover:border-[#fb9610] transition-all active:scale-95 hover:shadow-lg shadow-sm group relative"
+    className="aspect-[1.1/1] flex flex-col items-center justify-center gap-2 bg-white border-2 border-slate-100 rounded-2xl hover:border-[#fb9610] transition-all active:scale-95 hover:shadow-xl shadow-sm group relative"
   >
     <div className="flex gap-0.5">
       {word.split('').map((char, i) => (
-        <span key={i} className="text-lg font-black text-[#022d62] group-hover:text-[#fb9610] tracking-tighter">{char}</span>
+        <span key={i} className="text-xl font-black text-[#022d62] group-hover:text-[#fb9610] tracking-tighter">{char}</span>
       ))}
     </div>
-    <div className="w-6 h-6 bg-[#fb961010] text-[#fb9610] rounded-md flex items-center justify-center group-hover:bg-[#fb9610] group-hover:text-white transition-all shadow-inner">
-      <Volume2 size={12} strokeWidth={2.5} />
+    <div className="w-8 h-8 bg-[#fb961010] text-[#fb9610] rounded-lg flex items-center justify-center group-hover:bg-[#fb9610] group-hover:text-white transition-all shadow-inner">
+      <Volume2 size={16} strokeWidth={2.5} />
     </div>
   </button>
 );
@@ -41,19 +41,19 @@ const WordGridItem: React.FC<{ word: string }> = ({ word }) => (
 const StageCard: React.FC<{ id: number, title: string, subtitle: string, onClick: () => void }> = ({ id, title, subtitle, onClick }) => (
   <button 
     onClick={onClick}
-    className="w-full p-3 bg-white rounded-2xl border-2 border-slate-100 flex items-center justify-between text-left group transition-all hover:border-[#fb9610] hover:shadow-xl active:scale-95 mb-2.5"
+    className="w-full p-4 bg-white rounded-3xl border-2 border-slate-100 flex items-center justify-between text-left group transition-all hover:border-[#fb9610] hover:shadow-2xl active:scale-95 mb-3"
   >
-    <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-lg bg-[#fb961015] text-[#fb9610] flex items-center justify-center text-base font-black italic">
+    <div className="flex items-center gap-4">
+      <div className="w-11 h-11 rounded-xl bg-[#fb961015] text-[#fb9610] flex items-center justify-center text-lg font-black italic">
         {id}
       </div>
       <div>
-        <h3 className="text-base font-black text-[#022d62] leading-tight">{title}</h3>
-        <p className="text-slate-400 font-bold text-[10px] tracking-tight">{subtitle}</p>
+        <h3 className="text-lg font-black text-[#022d62] leading-tight">{title}</h3>
+        <p className="text-slate-400 font-bold text-xs tracking-tight">{subtitle}</p>
       </div>
     </div>
-    <div className="w-6 h-6 flex items-center justify-center rounded-full bg-slate-50 text-slate-300 group-hover:bg-[#fb9610] group-hover:text-white transition-all">
-      <ChevronRight size={16} strokeWidth={3} />
+    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-300 group-hover:bg-[#fb9610] group-hover:text-white transition-all">
+      <ChevronRight size={20} strokeWidth={3} />
     </div>
   </button>
 );
@@ -75,8 +75,8 @@ const LabSoundBoardPage: React.FC = () => {
       case 1:
         return (
           <div className="animate-fade-in-up">
-            <p className="text-slate-500 font-bold mb-4 px-1 text-[11px] uppercase tracking-wider">Tap sounds:</p>
-            <div className="grid grid-cols-6 gap-2">
+            <p className="text-slate-500 font-bold mb-5 px-1 text-sm">Tap buttons to hear sounds!</p>
+            <div className="grid grid-cols-5 gap-3">
               {group1.data?.map(item => (
                 <PhonicGridItem key={item.grapheme} grapheme={item.grapheme} dark />
               ))}
@@ -86,8 +86,8 @@ const LabSoundBoardPage: React.FC = () => {
       case 2:
         return (
           <div className="animate-fade-in-up">
-            <p className="text-slate-500 font-bold mb-4 px-1 text-[11px] uppercase tracking-wider">Tap letters:</p>
-            <div className="grid grid-cols-6 gap-2">
+            <p className="text-slate-500 font-bold mb-5 px-1 text-sm">Look and say the sounds.</p>
+            <div className="grid grid-cols-5 gap-3">
               {group1.data?.map(item => (
                 <PhonicGridItem key={item.grapheme} grapheme={item.grapheme} />
               ))}
@@ -96,19 +96,19 @@ const LabSoundBoardPage: React.FC = () => {
         );
       case 3:
         return (
-          <div className="animate-fade-in-up grid grid-cols-4 gap-2">
+          <div className="animate-fade-in-up grid grid-cols-3 gap-3">
             {group1.blend2?.map(word => <WordGridItem key={word} word={word} />)}
           </div>
         );
       case 4:
         return (
-          <div className="animate-fade-in-up grid grid-cols-4 gap-2">
+          <div className="animate-fade-in-up grid grid-cols-3 gap-3">
             {group1.blend3?.map(word => <WordGridItem key={word} word={word} />)}
           </div>
         );
       case 5:
         return (
-          <div className="animate-fade-in-up grid grid-cols-4 gap-2">
+          <div className="animate-fade-in-up grid grid-cols-3 gap-3">
             {group1.blend4?.map(word => <WordGridItem key={word} word={word} />)}
           </div>
         );
