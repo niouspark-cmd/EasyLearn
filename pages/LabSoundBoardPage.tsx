@@ -38,19 +38,14 @@ const WordGridItem: React.FC<{ word: string }> = ({ word }) => (
   </button>
 );
 
-const StageCard: React.FC<{ id: number, title: string, subtitle: string, onClick: () => void }> = ({ id, title, subtitle, onClick }) => (
+const StageCard: React.FC<{ title: string, subtitle: string, onClick: () => void }> = ({ title, subtitle, onClick }) => (
   <button 
     onClick={onClick}
-    className="w-full p-4 bg-white rounded-3xl border-2 border-slate-100 flex items-center justify-between text-left group transition-all hover:border-[#fb9610] hover:shadow-2xl active:scale-95 mb-3"
+    className="w-full py-4 px-6 bg-white rounded-3xl border-2 border-slate-100 flex items-center justify-between text-left group transition-all hover:border-[#fb9610] hover:shadow-2xl active:scale-95 mb-3"
   >
-    <div className="flex items-center gap-4">
-      <div className="w-11 h-11 rounded-xl bg-[#fb961015] text-[#fb9610] flex items-center justify-center text-lg font-black italic">
-        {id}
-      </div>
-      <div>
-        <h3 className="text-lg font-black text-[#022d62] leading-tight">{title}</h3>
-        <p className="text-slate-400 font-bold text-xs tracking-tight">{subtitle}</p>
-      </div>
+    <div>
+      <h3 className="text-lg font-black text-[#022d62] leading-tight">{title}</h3>
+      <p className="text-slate-400 font-bold text-xs tracking-tight">{subtitle}</p>
     </div>
     <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-300 group-hover:bg-[#fb9610] group-hover:text-white transition-all">
       <ChevronRight size={20} strokeWidth={3} />
@@ -63,11 +58,11 @@ const LabSoundBoardPage: React.FC = () => {
   const group1 = CURRICULUM_DATA.find(g => g.id === 1)!;
 
   const STAGES = [
-    { id: 1, title: "1. listen to Sounds", subtitle: "Listen carefully" },
-    { id: 2, title: "2. Letters & Sounds", subtitle: "See the letters" },
-    { id: 3, title: "3. Two Letters", subtitle: "Start blending" },
-    { id: 4, title: "4. Three Letters", subtitle: "Blend three letters" },
-    { id: 5, title: "5. Four Letters", subtitle: "Blend four letters" }
+    { id: 1, title: "Listen to Sounds", subtitle: "Listen carefully" },
+    { id: 2, title: "Letters & Sounds", subtitle: "See the letters" },
+    { id: 3, title: "Two Letters", subtitle: "Start blending" },
+    { id: 4, title: "Three Letters", subtitle: "Blend three letters" },
+    { id: 5, title: "Four Letters", subtitle: "Blend four letters" }
   ];
 
   const renderStageContent = () => {
@@ -159,7 +154,6 @@ const LabSoundBoardPage: React.FC = () => {
         {STAGES.map(stage => (
           <StageCard 
             key={stage.id}
-            id={stage.id}
             title={stage.title}
             subtitle={stage.subtitle}
             onClick={() => setCurrentStage(stage.id)}
