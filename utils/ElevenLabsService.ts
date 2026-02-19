@@ -1,7 +1,7 @@
 
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { AudioCache } from './AudioCache';
-import { STATIC_ASSETS, getPhonemeData, PHONICS_WORDS } from './phoneticMap';
+import { STATIC_ASSETS, getPhonemeData, PHONICS_WORDS, getPhonemes } from './phoneticMap';
 import { LETTER_IMAGES } from './letterImages';
 import { PiperService } from './PiperService';
 
@@ -46,6 +46,29 @@ export class ElevenLabsService {
    * 
    * NOTE: Native Browser SpeechSynthesis is DISABLED to ensure professional consistency.
    */
+  /**
+   * Plays a word by introducing sounds one at a time, then playing the whole word.
+   */
+  static async playWithPhonemes(word: string, options?: { onComplete?: () => void }): Promise<void> {
+      const phonemes = getPhonemes(word);
+      console.log(`[MasterGate] Blending: "${word}" -> [${phonemes.join(', ')}]`);
+      
+      // 1. Play individual sounds
+      for (const p of phonemes) {
+          await new Promise<void>((resolve) => {
+              this.play(p, { onComplete: resolve });
+          });
+          // Small pause between phonemes
+          await new Promise(r => setTimeout(r, 400));
+      }
+
+      // 2. Small pause before the whole word
+      await new Promise(r => setTimeout(r, 200));
+
+      // 3. Play the whole word
+      await this.play(word, options);
+  }
+
   static async play(text: string, options?: { onBoundary?: (event: { textOffset: number }) => void, onComplete?: () => void, rate?: number }): Promise<void> {
       
       // 1. CLEAR THE STAGE - Stop every possible audio source

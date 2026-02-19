@@ -144,4 +144,33 @@ export const getPhonemeData = (grapheme: string): PhonemeData | null => {
     return PHONETIC_DICTIONARY[grapheme.toLowerCase()] || null;
 }
 
+/**
+ * Splits a word into its constituent phonemes based on the dictionary.
+ * Uses a greedy matching algorithm (longest grapheme first).
+ */
+export const getPhonemes = (word: string): string[] => {
+    const lowerWord = word.toLowerCase().trim();
+    const graphemes = Object.keys(PHONETIC_DICTIONARY).sort((a, b) => b.length - a.length);
+    const result: string[] = [];
+    let i = 0;
+    
+    while (i < lowerWord.length) {
+        let matched = false;
+        for (const g of graphemes) {
+            if (lowerWord.startsWith(g, i)) {
+                result.push(g);
+                i += g.length;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            // Fallback to single character if no grapheme matches
+            result.push(lowerWord[i]);
+            i++;
+        }
+    }
+    return result;
+};
+
 export const STATIC_ASSETS = Object.keys(PHONETIC_DICTIONARY);

@@ -4,6 +4,7 @@ import { ElevenLabsService } from '../../utils/ElevenLabsService';
 import { GroqService } from '../../utils/GroqService';
 import { SpeechRecognitionService } from '../../utils/SpeechRecognitionService';
 import { getLetterImage, getWordImage, highlightWord } from '../../utils/letterImages';
+import { getPhonemes } from '../../utils/phoneticMap';
 
 interface PhonicLessonProps {
   lessonId: number;
@@ -23,6 +24,7 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [transcription, setTranscription] = useState("");
+  const [activePhoneme, setActivePhoneme] = useState<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -49,7 +51,7 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
   const playSound = async () => {
     try {
       if (activeTab === 'blending') {
-        await ElevenLabsService.play(currentWord);
+        await ElevenLabsService.playWithPhonemes(currentWord);
       } else {
         await ElevenLabsService.play(currentItem.grapheme); 
       }
@@ -180,7 +182,7 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
         </div>
 
         {/* Action Board */}
-        <div className="w-full aspect-square bg-white border-4 border-[#e7effc] rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-8 mb-8 relative group overflow-hidden">
+        <div className="w-full aspect-[4/3] bg-white border-4 border-[#e7effc] rounded-[40px] shadow-2xl flex flex-col items-center justify-center p-6 mb-6 relative group overflow-hidden">
             {activeTab === 'sound' && (
                 <button onClick={playSound} className="flex flex-col items-center gap-6 animate-zoom-in">
                     <div className="w-40 h-40 bg-[#fb961015] rounded-full flex items-center justify-center border-4 border-dashed border-[#fb9610] animate-pulse">
@@ -200,20 +202,39 @@ const PhonicLesson: React.FC<PhonicLessonProps> = ({ lessonId, title, data, onCo
             )}
 
             {activeTab === 'blending' && (
-                <div className="flex flex-col items-center gap-4 animate-zoom-in w-full text-center">
+                <div className="flex flex-col items-center gap-2 animate-zoom-in w-full text-center">
                     {wordImage && (
-                        <div className="w-48 h-48 bg-slate-50 rounded-3xl p-4 border-2 border-[#fb961033] shadow-inner mb-2">
+                        <div className="w-24 h-24 bg-slate-50 rounded-2xl p-2 border-2 border-[#fb961033] shadow-inner mb-2">
                              <img src={wordImage} alt={currentWord} className="w-full h-full object-contain" />
                         </div>
                     )}
-                    <button onClick={playSound} className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
-                        <div className="text-6xl font-black text-[#022d62] tracking-wider uppercase">
-                            {currentWord}
+                    
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {getPhonemes(currentWord).map((p, i) => (
+                                <div key={i} className="flex flex-col items-center gap-1.5">
+                                    <button
+                                        onClick={() => {
+                                            setActivePhoneme(i);
+                                            ElevenLabsService.play(p);
+                                            setTimeout(() => setActivePhoneme(null), 500);
+                                        }}
+                                        className={`text-5xl font-black transition-all p-1 rounded-xl active:scale-90 ${activePhoneme === i ? 'text-[#fb9610] scale-110' : 'text-[#022d62] hover:text-[#fb9610]'}`}
+                                    >
+                                        {p.toLowerCase()}
+                                    </button>
+                                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${activePhoneme === i ? 'bg-[#fb9610] scale-125 shadow-[0_0_8px_#fb9610]' : 'bg-slate-200'}`} />
+                                </div>
+                            ))}
                         </div>
-                        <div className="flex items-center gap-2 text-[#fb9610] font-bold text-sm">
-                            <Volume2 size={16} /> Tap to blend
-                        </div>
-                    </button>
+
+                        <button 
+                            onClick={playSound} 
+                            className="flex items-center gap-2 text-[#fb9610] font-bold text-xs px-4 py-1.5 bg-[#fb961010] rounded-full hover:bg-[#fb9610] hover:text-white transition-all active:scale-95"
+                        >
+                            <Volume2 size={14} /> Tap to blend
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
